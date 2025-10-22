@@ -1,0 +1,12 @@
+{
+  "telegram_bot_token": "YOUR_CITIZEN_BOT_TOKEN",
+  "analyst_bot_token": "YOUR_ANALYST_BOT_TOKEN", 
+  "gigachat_api_key": "YOUR_GIGACHAT_API_KEY",
+  "mysql_config": {
+    "host": "localhost",
+    "user": "root",
+    "password": "YOUR_PASSWORD",
+    "database": "citizen_appeals"
+  },
+  "web_port": 5000
+}

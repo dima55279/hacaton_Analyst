@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Аналитика обращений граждан</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .filters { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>📊 Аналитика обращений граждан</h1>
+    
+    <div class="filters">
+        <label>Период:</label>
+        <select id="periodSelect">
+            <option value="7">7 дней</option>
+            <option value="30" selected>30 дней</option>
+            <option value="90">90 дней</option>
+        </select>
+    </div>
+
+    <div class="dashboard">
+        <div class="card">
+            <h3>Распределение по типам</h3>
+            <canvas id="typeChart"></canvas>
+        </div>
+        
+        <div class="card">
+            <h3>Статусы обращений</h3>
+            <canvas id="statusChart"></canvas>
+        </div>
+        
+        <div class="card" style="grid-column: span 2;">
+            <h3>Последние обращения</h3>
+            <div id="appealsTable"></div>
+        </div>
+    </div>
+
+    <script>
+        let typeChart, statusChart;
+
+        async function loadData() {
+            const period = document.getElementById('periodSelect').value;
+            
+            // Загрузка статистики
+            const statsResponse = await fetch(`/api/stats?period=${period}`);
+            const stats = await statsResponse.json();
+            
+            // Загрузка трендов
+            const trendsResponse = await fetch(`/api/trends?period=${period}`);
+            const trends = await trendsResponse.json();
+            
+            // Загрузка обращений
+            const appealsResponse = await fetch('/api/appeals?limit=10');
+            const appeals = await appealsResponse.json();
+            
+            updateCharts(stats, trends);
+            updateAppealsTable(appeals);
+        }
+
+        function updateCharts(stats, trends) {
+            // Обновление графиков
+            const typeData = processTypeData(stats);
+            const statusData = processStatusData(stats);
+            
+            if (typeChart) typeChart.destroy();
+            if (statusChart) statusChart.destroy();
+            
+            typeChart = new Chart(document.getElementById('typeChart'), {
+                type: 'pie',
+                data: typeData
+            });
+            
+            statusChart = new Chart(document.getElementById('statusChart'), {
+                type: 'bar',
+                data: statusData
+            });
+        }
+
+        function updateAppealsTable(appeals) {
+            const table = document.getElementById('appealsTable');
+            let html = '<table><tr><th>ID</th><th>Тип</th><th>Текст</th><th>Статус</th><th>Дата</th></tr>';
+            
+            appeals.forEach(appeal => {
+                html += `<tr>
+                    <td>${appeal.id}</td>
+                    <td>${appeal.type || 'не определен'}</td>
+                    <td>${appeal.text.substring(0, 100)}...</td>
+                    <td>${appeal.status}</td>
+                    <td>${new Date(appeal.created_at).toLocaleDateString()}</td>
+                </tr>`;
+            });
+            
+            html += '</table>';
+            table.innerHTML = html;
+        }
+
+        document.getElementById('periodSelect').addEventListener('change', loadData);
+        loadData();
+    </script>
+</body>
+</html>
