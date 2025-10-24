@@ -56,6 +56,29 @@ def create_dashboard_app(appeals_system):
             logger.error(f"❌ Ошибка получения обращений: {e}")
             return jsonify({"error": "Ошибка получения обращений"}), 500
 
+    @app.route('/api/realtime_stats')
+    def get_realtime_stats():
+        """Новый endpoint для получения реальной статистики"""
+        try:
+            logger.info("🔄 Запрос реальной статистики")
+            stats = system.database.get_real_time_stats()
+            return jsonify(stats)
+        except Exception as e:
+            logger.error(f"❌ Ошибка получения реальной статистики: {e}")
+            return jsonify({"error": "Ошибка получения реальной статистики"}), 500
+
+    @app.route('/api/recent_appeals')
+    def get_recent_appeals():
+        """Новый endpoint для получения последних обращений"""
+        try:
+            limit = request.args.get('limit', 10, type=int)
+            logger.info(f"🆕 Запрос последних {limit} обращений")
+            appeals = system.database.get_recent_appeals(limit)
+            return jsonify(appeals)
+        except Exception as e:
+            logger.error(f"❌ Ошибка получения последних обращений: {e}")
+            return jsonify({"error": "Ошибка получения последних обращений"}), 500
+
     @app.route('/api/update_appeal/<int:appeal_id>', methods=['POST'])
     def update_appeal(appeal_id):
         try:

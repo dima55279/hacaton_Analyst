@@ -98,11 +98,24 @@ class AppealsAnalyzer:
             return "Благодарим за обращение! Ваше сообщение принято к рассмотрению."
 
     def analyze_trends(self, period_days=30):
-        """Анализ трендов и повторяющихся проблем"""
+        """Анализ трендов и повторяющихся проблем с актуальными данными"""
         try:
+            # Получаем актуальные данные из базы
             appeals = self.db.get_appeals({
                 'date_from': datetime.now() - timedelta(days=period_days)
             }, limit=1000)
+            
+            logger.info(f"📈 Анализ трендов: получено {len(appeals)} обращений за {period_days} дней")
+            
+            if not appeals:
+                return {
+                    'period_days': period_days,
+                    'total_appeals': 0,
+                    'type_distribution': {},
+                    'common_themes': [],
+                    'response_rate': 0,
+                    'last_updated': datetime.now().isoformat()
+                }
             
             # Анализ частых тем
             themes = self._extract_themes([a['text'] for a in appeals])
@@ -118,10 +131,11 @@ class AppealsAnalyzer:
                 'total_appeals': len(appeals),
                 'type_distribution': type_stats,
                 'common_themes': themes[:10],
-                'response_rate': self._calculate_response_rate(appeals)
+                'response_rate': self._calculate_response_rate(appeals),
+                'last_updated': datetime.now().isoformat()
             }
             
-            logger.info(f"📊 Проанализированы тренды за {period_days} дней")
+            logger.info(f"📊 Проанализированы актуальные тренды за {period_days} дней")
             return trends
             
         except Exception as e:
@@ -131,7 +145,10 @@ class AppealsAnalyzer:
     def _extract_themes(self, texts):
         """Извлечение частых тем из текстов обращений"""
         try:
-            combined_text = " ".join(texts)
+            if not texts:
+                return []
+                
+            combined_text = " ".join(texts[:20])  # Ограничиваем для производительности
             
             prompt = f"""
             Проанализируй тексты обращений граждан и выдели 10 самых частых тем/проблем.
@@ -146,20 +163,30 @@ class AppealsAnalyzer:
             ])
             
             # Парсинг JSON ответа
-            themes = json.loads(response)
-            return themes
+            try:
+                themes = json.loads(response)
+                return themes
+            except:
+                logger.warning("❌ Не удалось распарсить JSON ответ от GigaChat, используем fallback")
+                return self._extract_themes_fallback(texts)
             
-        except:
+        except Exception as e:
+            logger.error(f"❌ Ошибка извлечения тем: {e}")
             # Резервный метод по ключевым словам
             return self._extract_themes_fallback(texts)
 
     def _extract_themes_fallback(self, texts):
         """Резервный метод извлечения тем по ключевым словам"""
+        if not texts:
+            return []
+            
         keywords = {
             'дороги': ['дорог', 'асфальт', 'яма', 'ремонт дорог'],
             'ЖКХ': ['жкх', 'управляющая', 'отоплен', 'водоснабжен', 'мусор'],
             'транспорт': ['автобус', 'остановк', 'маршрут', 'транспорт'],
-            'благоустройство': ['парк', 'сквер', 'детская площадка', 'озеленен']
+            'благоустройство': ['парк', 'сквер', 'детская площадка', 'озеленен'],
+            'шум': ['шум', 'громко', 'тишина'],
+            'документы': ['справк', 'документ', 'получить']
         }
         
         themes = []
@@ -173,6 +200,9 @@ class AppealsAnalyzer:
 
     def _calculate_response_rate(self, appeals):
         """Расчет процента отвеченных обращений"""
+        if not appeals:
+            return 0
+            
         answered = sum(1 for a in appeals if a['status'] == 'answered')
         total = len(appeals)
         return round((answered / total * 100), 2) if total > 0 else 0

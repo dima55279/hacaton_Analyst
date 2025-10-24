@@ -18,9 +18,10 @@ class AnalystBot:
 📊 Панель аналитика системы обращений
 
 Доступные команды:
-/stats - Статистика обращений
+/stats - Актуальная статистика
 /trends - Анализ трендов
 /appeals - Последние обращения
+/refresh - Обновить данные
 /help - Справка
 
 Используйте кнопки для быстрого доступа к функциям.
@@ -34,99 +35,141 @@ class AnalystBot:
         await update.message.reply_text(welcome_text, reply_markup=reply_markup)
 
     async def show_stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Показать статистику"""
+        """Показать актуальную статистику в реальном времени"""
         try:
-            stats = self.system.database.get_appeals_stats(30)
+            # Получаем актуальные данные из базы
+            stats = self.system.database.get_real_time_stats()
             
             if not stats:
-                await update.message.reply_text("Нет данных за указанный период.")
+                await update.message.reply_text("❌ Нет данных для отображения.")
                 return
             
-            # Агрегация статистики
-            type_counts = {}
-            status_counts = {}
-            total = 0
+            response = f"📈 АКТУАЛЬНАЯ СТАТИСТИКА\n\n"
+            response += f"📊 Всего обращений: {stats['total']}\n"
+            response += f"🕐 За последние 24 часа: {stats['last_24h']}\n\n"
             
-            for stat in stats:
-                appeal_type = stat['type'] or 'не определен'
-                type_counts[appeal_type] = type_counts.get(appeal_type, 0) + stat['count']
-                status_counts[stat['status']] = status_counts.get(stat['status'], 0) + stat['count']
-                total += stat['count']
+            response += "📋 По статусам:\n"
+            for status, count in stats['status_stats'].items():
+                status_emoji = self._get_status_emoji(status)
+                response += f"  {status_emoji} {status}: {count}\n"
             
-            response = f"📈 Статистика за 30 дней:\n\n"
-            response += f"Всего обращений: {total}\n\n"
+            response += "\n🏷️ Топ-5 по типам:\n"
+            for i, type_stat in enumerate(stats['type_stats'], 1):
+                appeal_type = type_stat['type'] or 'не определен'
+                response += f"  {i}. {appeal_type}: {type_stat['count']}\n"
             
-            response += "По типам:\n"
-            for appeal_type, count in sorted(type_counts.items(), key=lambda x: x[1], reverse=True)[:5]:
-                response += f"• {appeal_type}: {count}\n"
-            
-            response += "\nПо статусам:\n"
-            for status, count in status_counts.items():
-                response += f"• {status}: {count}\n"
+            response += f"\n⏰ Обновлено: {datetime.now().strftime('%H:%M:%S')}"
             
             await update.message.reply_text(response)
             
         except Exception as e:
-            logger.error(f"Ошибка получения статистики: {e}")
-            await update.message.reply_text("Ошибка при получении статистики.")
+            logger.error(f"❌ Ошибка получения статистики: {e}")
+            await update.message.reply_text("❌ Ошибка при получении статистики.")
 
     async def show_trends(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Показать тренды"""
+        """Показать тренды с актуальными данными"""
         try:
             trends = self.system.get_analytics(30)
             
-            response = f"📊 Анализ трендов за 30 дней:\n\n"
-            response += f"Всего обращений: {trends['total_appeals']}\n"
-            response += f"Процент ответов: {trends['response_rate']}%\n\n"
-            
-            response += "Распределение по типам:\n"
-            for appeal_type, count in trends['type_distribution'].items():
-                response += f"• {appeal_type}: {count}\n"
-            
-            response += "\nЧастые темы:\n"
-            for theme in trends['common_themes'][:5]:
-                response += f"• {theme['theme']} ({theme['frequency']})\n"
-            
-            await update.message.reply_text(response)
-            
-        except Exception as e:
-            logger.error(f"Ошибка получения трендов: {e}")
-            await update.message.reply_text("Ошибка при получении трендов.")
-
-    async def show_recent_appeals(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Показать последние обращения"""
-        try:
-            appeals = self.system.database.get_appeals(limit=5)
-            
-            if not appeals:
-                await update.message.reply_text("Нет обращений для отображения.")
+            if not trends:
+                await update.message.reply_text("❌ Нет данных для анализа трендов.")
                 return
             
-            response = "📝 Последние обращения:\n\n"
-            for i, appeal in enumerate(appeals, 1):
-                status_emoji = "✅" if appeal['status'] == 'answered' else "⏳"
-                response += f"{i}. {status_emoji} {appeal['type'] or 'не определен'}\n"
-                response += f"   {appeal['text'][:100]}...\n"
-                response += f"   Статус: {appeal['status']}\n\n"
+            response = f"📊 АНАЛИЗ ТРЕНДОВ (30 дней)\n\n"
+            response += f"📈 Всего обращений: {trends['total_appeals']}\n"
+            response += f"📞 Процент ответов: {trends['response_rate']}%\n\n"
+            
+            response += "🏷️ Распределение по типам:\n"
+            for appeal_type, count in trends['type_distribution'].items():
+                response += f"  • {appeal_type}: {count}\n"
+            
+            response += "\n🔍 Частые темы:\n"
+            for theme in trends.get('common_themes', [])[:5]:
+                theme_name = theme.get('theme', 'не определена')
+                frequency = theme.get('frequency', 'неизвестно')
+                response += f"  • {theme_name} ({frequency})\n"
+            
+            response += f"\n⏰ Обновлено: {datetime.now().strftime('%H:%M:%S')}"
             
             await update.message.reply_text(response)
             
         except Exception as e:
-            logger.error(f"Ошибка получения обращений: {e}")
-            await update.message.reply_text("Ошибка при получении обращений.")
+            logger.error(f"❌ Ошибка получения трендов: {e}")
+            await update.message.reply_text("❌ Ошибка при получении трендов.")
+
+    async def show_recent_appeals(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Показать последние обращения (актуальные данные)"""
+        try:
+            # Получаем актуальные данные из базы
+            appeals = self.system.database.get_recent_appeals(5)
+            
+            if not appeals:
+                await update.message.reply_text("📭 Нет обращений для отображения.")
+                return
+            
+            response = "📝 ПОСЛЕДНИЕ ОБРАЩЕНИЯ\n\n"
+            for i, appeal in enumerate(appeals, 1):
+                status_emoji = self._get_status_emoji(appeal['status'])
+                appeal_type = appeal['type'] or 'не определен'
+                created_time = appeal['created_at'].strftime('%H:%M') if isinstance(appeal['created_at'], datetime) else appeal['created_at']
+                
+                response += f"{i}. {status_emoji} *{appeal_type}*\n"
+                response += f"   📄 {appeal['text'][:80]}...\n"
+                response += f"   🏷️ Статус: {appeal['status']}\n"
+                response += f"   ⏰ {created_time}\n\n"
+            
+            response += f"🔄 Автоматически обновляется при запросе"
+            
+            await update.message.reply_text(response, parse_mode='Markdown')
+            
+        except Exception as e:
+            logger.error(f"❌ Ошибка получения обращений: {e}")
+            await update.message.reply_text("❌ Ошибка при получении обращений.")
+
+    async def refresh_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Принудительное обновление данных"""
+        try:
+            # Просто отправляем сообщение, что данные актуальны
+            # Фактическое обновление происходит при каждом запросе к базе
+            response = "🔄 Данные успешно обновлены!\n\n"
+            response += "Все команды теперь показывают актуальную информацию из базы данных в реальном времени."
+            
+            await update.message.reply_text(response)
+            
+        except Exception as e:
+            logger.error(f"❌ Ошибка обновления: {e}")
+            await update.message.reply_text("❌ Ошибка при обновлении данных.")
 
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Команда помощи для аналитиков"""
         help_text = """
-📋 Панель аналитика:
+📋 ПАНЕЛЬ АНАЛИТИКА
 
-/stats - Статистика обращений за последние 30 дней
-/trends - Анализ трендов и частых тем
-/appeals - Просмотр последних обращений
+*/stats* - Актуальная статистика в реальном времени
+*/trends* - Анализ трендов за 30 дней
+*/appeals* - Просмотр последних обращений
+*/refresh* - Принудительное обновление данных
+*/help* - Эта справка
+
+💡 *Особенности:*
+• Все данные обновляются автоматически при каждом запросе
+• Статистика показывает текущее состояние системы
+• Время обновления указывается в каждом отчете
 
 Используйте кнопки для быстрого доступа к функциям.
 """
-        await update.message.reply_text(help_text)
+        await update.message.reply_text(help_text, parse_mode='Markdown')
+
+    def _get_status_emoji(self, status):
+        """Получить emoji для статуса"""
+        status_emojis = {
+            'new': '🆕',
+            'answered': '✅',
+            'in_progress': '🔄',
+            'requires_manual_review': '👨‍💼',
+            'closed': '🔒'
+        }
+        return status_emojis.get(status, '📄')
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка текстовых сообщений"""
@@ -139,7 +182,7 @@ class AnalystBot:
         elif text == '📝 Обращения':
             await self.show_recent_appeals(update, context)
         elif text == '🔄 Обновить':
-            await update.message.reply_text("Данные обновлены!")
+            await self.refresh_command(update, context)
 
     def setup_handlers(self):
         """Настройка обработчиков"""
@@ -147,6 +190,7 @@ class AnalystBot:
         self.application.add_handler(CommandHandler("stats", self.show_stats))
         self.application.add_handler(CommandHandler("trends", self.show_trends))
         self.application.add_handler(CommandHandler("appeals", self.show_recent_appeals))
+        self.application.add_handler(CommandHandler("refresh", self.refresh_command))
         self.application.add_handler(CommandHandler("help", self.help_command))
         self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
 

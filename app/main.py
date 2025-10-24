@@ -3,7 +3,7 @@ import sys
 import json
 import multiprocessing
 from datetime import datetime
-from database.mysql_db import MySQLAppealsDB
+from database.database_manager import DatabaseManager
 from gigachat.api_client import GigaChatClient
 from processing.analyzer import AppealsAnalyzer
 from bot.citizen_bot import CitizenBot
@@ -25,7 +25,8 @@ class AppealsProcessingSystem:
     def __init__(self, config):
         self.config = config
         self.gigachat = GigaChatClient(config['gigachat_api_key'])
-        self.database = MySQLAppealsDB(config['mysql_config'])
+        # Используем единый менеджер базы данных
+        self.database = DatabaseManager(config['mysql_config'])
         self.analyzer = AppealsAnalyzer(self.gigachat, self.database)
         
     def process_citizen_appeal(self, user_id, appeal_text, platform="telegram"):
@@ -81,13 +82,16 @@ def run_dashboard(config):
     web_app = create_dashboard_app(system)
     web_port = config.get('web_port', 5000)
     logger.info(f"🚀 Запуск веб-интерфейса на порту {web_port}...")
-    web_app.run(host='0.0.0.0', port=web_port, debug=False)
+    web_app.run(host='0.0.0.0', port=web_port, debug=False, use_reloader=False)
 
 def main():
     try:
         # Загрузка конфигурации
         with open("config.json", "r") as f:
             config = json.load(f)
+        
+        # Инициализируем единый менеджер базы данных
+        DatabaseManager(config['mysql_config'])
         
         logger.info("✅ Система обработки обращений инициализирована")
         
@@ -118,6 +122,10 @@ def main():
             
     except Exception as e:
         logger.error(f"❌ Ошибка запуска системы: {e}")
+    finally:
+        # Закрываем соединение с базой данных при завершении
+        db_manager = DatabaseManager()
+        db_manager.close()
 
 if __name__ == "__main__":
     main()

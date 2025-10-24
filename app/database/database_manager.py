@@ -2,23 +2,46 @@ import mysql.connector
 from mysql.connector import Error
 import logging
 from datetime import datetime
+import threading
 
 logger = logging.getLogger(__name__)
 
-class MySQLAppealsDB:
-    def __init__(self, config):
+class DatabaseManager:
+    _instance = None
+    _lock = threading.Lock()
+    
+    def __new__(cls, config=None):
+        with cls._lock:
+            if cls._instance is None:
+                cls._instance = super(DatabaseManager, cls).__new__(cls)
+                if config:
+                    cls._instance._initialize(config)
+            return cls._instance
+    
+    def _initialize(self, config):
         self.config = config
         self.connection = None
         self._connect()
         self._create_tables()
-
+    
     def _connect(self):
         """Подключение к MySQL"""
         try:
             self.connection = mysql.connector.connect(**self.config)
+            self.connection.autocommit = True
             logger.info("✅ Успешное подключение к MySQL")
         except Error as e:
             logger.error(f"❌ Ошибка подключения к MySQL: {e}")
+            raise
+    
+    def get_connection(self):
+        """Получение соединения с базой данных"""
+        try:
+            if not self.connection or not self.connection.is_connected():
+                self._connect()
+            return self.connection
+        except Error as e:
+            logger.error(f"❌ Ошибка получения соединения: {e}")
             raise
 
     def _create_tables(self):
@@ -68,8 +91,9 @@ class MySQLAppealsDB:
 
     def store_appeal(self, appeal_data):
         """Сохранение обращения в базу"""
+        conn = self.get_connection()
         try:
-            cursor = self.connection.cursor()
+            cursor = conn.cursor()
             
             query = """
             INSERT INTO appeals (user_id, text, type, platform, status, created_at)
@@ -86,7 +110,6 @@ class MySQLAppealsDB:
             ))
             
             appeal_id = cursor.lastrowid
-            self.connection.commit()
             cursor.close()
             
             logger.info(f"💾 Сохранено обращение ID: {appeal_id}")
@@ -94,13 +117,13 @@ class MySQLAppealsDB:
             
         except Error as e:
             logger.error(f"❌ Ошибка сохранения обращения: {e}")
-            self.connection.rollback()
             raise
 
     def update_appeal(self, appeal_id, update_data):
         """Обновление обращения"""
+        conn = self.get_connection()
         try:
-            cursor = self.connection.cursor()
+            cursor = conn.cursor()
             
             set_clause = ", ".join([f"{key} = %s" for key in update_data.keys()])
             values = list(update_data.values())
@@ -109,25 +132,27 @@ class MySQLAppealsDB:
             query = f"UPDATE appeals SET {set_clause} WHERE id = %s"
             
             cursor.execute(query, values)
-            self.connection.commit()
             cursor.close()
             
             logger.info(f"✏️ Обновлено обращение ID: {appeal_id}")
             
         except Error as e:
             logger.error(f"❌ Ошибка обновления обращения: {e}")
-            self.connection.rollback()
             raise
 
     def get_appeals(self, filters=None, limit=100, offset=0):
         """Получение обращений с фильтрами"""
+        conn = self.get_connection()
         try:
-            cursor = self.connection.cursor(dictionary=True)
+            cursor = conn.cursor(dictionary=True)
             
             where_clause = "WHERE 1=1"
             params = []
             
             if filters:
+                if 'user_id' in filters:
+                    where_clause += " AND user_id = %s"
+                    params.append(filters['user_id'])
                 if 'type' in filters:
                     where_clause += " AND type = %s"
                     params.append(filters['type'])
@@ -159,21 +184,44 @@ class MySQLAppealsDB:
             logger.error(f"❌ Ошибка получения обращений: {e}")
             return []
 
-    def get_appeals_stats(self, period_days=30):
-        """Статистика по обращениям"""
+    def get_recent_appeals(self, limit=10):
+        """Получение последних обращений (актуальные данные)"""
+        conn = self.get_connection()
         try:
-            cursor = self.connection.cursor(dictionary=True)
+            cursor = conn.cursor(dictionary=True)
+            
+            query = """
+            SELECT * FROM appeals 
+            ORDER BY created_at DESC 
+            LIMIT %s
+            """
+            
+            cursor.execute(query, (limit,))
+            appeals = cursor.fetchall()
+            cursor.close()
+            
+            logger.info(f"📝 Получено {len(appeals)} последних обращений")
+            return appeals
+            
+        except Error as e:
+            logger.error(f"❌ Ошибка получения последних обращений: {e}")
+            return []
+
+    def get_appeals_stats(self, period_days=30):
+        """Статистика по обращениям за период"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor(dictionary=True)
             
             query = """
             SELECT 
                 type,
                 status,
-                COUNT(*) as count,
-                DATE(created_at) as date
+                COUNT(*) as count
             FROM appeals 
             WHERE created_at >= DATE_SUB(NOW(), INTERVAL %s DAY)
-            GROUP BY type, status, DATE(created_at)
-            ORDER BY date DESC, count DESC
+            GROUP BY type, status
+            ORDER BY count DESC
             """
             
             cursor.execute(query, (period_days,))
@@ -186,8 +234,60 @@ class MySQLAppealsDB:
             logger.error(f"❌ Ошибка получения статистики: {e}")
             return []
 
+    def get_real_time_stats(self):
+        """Получение актуальной статистики в реальном времени"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor(dictionary=True)
+            
+            # Общее количество обращений
+            cursor.execute("SELECT COUNT(*) as total FROM appeals")
+            total = cursor.fetchone()['total']
+            
+            # По статусам
+            cursor.execute("""
+                SELECT status, COUNT(*) as count 
+                FROM appeals 
+                GROUP BY status
+            """)
+            status_stats = {row['status']: row['count'] for row in cursor.fetchall()}
+            
+            # По типам (топ-5)
+            cursor.execute("""
+                SELECT type, COUNT(*) as count 
+                FROM appeals 
+                WHERE type IS NOT NULL 
+                GROUP BY type 
+                ORDER BY count DESC 
+                LIMIT 5
+            """)
+            type_stats = cursor.fetchall()
+            
+            # Последние 24 часа
+            cursor.execute("""
+                SELECT COUNT(*) as last_24h 
+                FROM appeals 
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+            """)
+            last_24h = cursor.fetchone()['last_24h']
+            
+            cursor.close()
+            
+            logger.info(f"📊 Реальная статистика: всего {total}, за 24ч: {last_24h}")
+            
+            return {
+                'total': total,
+                'status_stats': status_stats,
+                'type_stats': type_stats,
+                'last_24h': last_24h
+            }
+            
+        except Error as e:
+            logger.error(f"❌ Ошибка получения реальной статистики: {e}")
+            return {}
+
     def close(self):
         """Закрытие соединения"""
-        if self.connection:
+        if self.connection and self.connection.is_connected():
             self.connection.close()
             logger.info("🔌 Соединение с MySQL закрыто")
