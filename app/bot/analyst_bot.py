@@ -1,6 +1,7 @@
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import logging
+import asyncio
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -97,6 +98,10 @@ class AnalystBot:
         try:
             appeals = self.system.database.get_appeals(limit=5)
             
+            if not appeals:
+                await update.message.reply_text("Нет обращений для отображения.")
+                return
+            
             response = "📝 Последние обращения:\n\n"
             for i, appeal in enumerate(appeals, 1):
                 status_emoji = "✅" if appeal['status'] == 'answered' else "⏳"
@@ -109,6 +114,19 @@ class AnalystBot:
         except Exception as e:
             logger.error(f"Ошибка получения обращений: {e}")
             await update.message.reply_text("Ошибка при получении обращений.")
+
+    async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Команда помощи для аналитиков"""
+        help_text = """
+📋 Панель аналитика:
+
+/stats - Статистика обращений за последние 30 дней
+/trends - Анализ трендов и частых тем
+/appeals - Просмотр последних обращений
+
+Используйте кнопки для быстрого доступа к функциям.
+"""
+        await update.message.reply_text(help_text)
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка текстовых сообщений"""
@@ -129,11 +147,16 @@ class AnalystBot:
         self.application.add_handler(CommandHandler("stats", self.show_stats))
         self.application.add_handler(CommandHandler("trends", self.show_trends))
         self.application.add_handler(CommandHandler("appeals", self.show_recent_appeals))
+        self.application.add_handler(CommandHandler("help", self.help_command))
         self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
 
     def run(self):
-        """Запуск бота"""
+        """Запуск бота с созданием нового event loop"""
         try:
+            # Создаем новый event loop для этого процесса
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
             self.application = Application.builder().token(self.token).build()
             self.setup_handlers()
 
@@ -141,4 +164,4 @@ class AnalystBot:
             self.application.run_polling()
 
         except Exception as e:
-            logger.error(f"Ошибка запуска бота: {e}")
+            logger.error(f"❌ Ошибка запуска бота аналитиков: {e}")

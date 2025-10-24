@@ -1,6 +1,7 @@
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import logging
+import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -118,8 +119,12 @@ class CitizenBot:
         self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
 
     def run(self):
-        """Запуск бота"""
+        """Запуск бота с созданием нового event loop"""
         try:
+            # Создаем новый event loop для этого процесса
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
             self.application = Application.builder().token(self.token).build()
             self.setup_handlers()
 
@@ -127,4 +132,4 @@ class CitizenBot:
             self.application.run_polling()
 
         except Exception as e:
-            logger.error(f"Ошибка запуска бота: {e}")
+            logger.error(f"❌ Ошибка запуска бота для граждан: {e}")

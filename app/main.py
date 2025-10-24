@@ -1,6 +1,7 @@
 import logging
 import sys
 import json
+import multiprocessing
 from datetime import datetime
 from database.mysql_db import MySQLAppealsDB
 from gigachat.api_client import GigaChatClient
@@ -60,39 +61,63 @@ class AppealsProcessingSystem:
         """Получение аналитики за период"""
         return self.analyzer.analyze_trends(period_days)
 
+def run_citizen_bot(config):
+    """Запуск бота для граждан в отдельном процессе"""
+    system = AppealsProcessingSystem(config)
+    citizen_bot = CitizenBot(config['telegram_bot_token'], system)
+    logger.info("🚀 Запуск бота для граждан...")
+    citizen_bot.run()
+
+def run_analyst_bot(config):
+    """Запуск бота для аналитиков в отдельном процессе"""
+    system = AppealsProcessingSystem(config)
+    analyst_bot = AnalystBot(config['analyst_bot_token'], system)
+    logger.info("🚀 Запуск бота для аналитиков...")
+    analyst_bot.run()
+
+def run_dashboard(config):
+    """Запуск веб-интерфейса в отдельном процессе"""
+    system = AppealsProcessingSystem(config)
+    web_app = create_dashboard_app(system)
+    web_port = config.get('web_port', 5000)
+    logger.info(f"🚀 Запуск веб-интерфейса на порту {web_port}...")
+    web_app.run(host='0.0.0.0', port=web_port, debug=False)
+
 def main():
     try:
         # Загрузка конфигурации
         with open("config.json", "r") as f:
             config = json.load(f)
         
-        # Инициализация системы
-        system = AppealsProcessingSystem(config)
+        logger.info("✅ Система обработки обращений инициализирована")
         
-        # Запуск бота для граждан
-        citizen_bot = CitizenBot(
-            config['telegram_bot_token'],
-            system
-        )
+        # Создание процессов для каждого компонента
+        processes = []
         
-        # Запуск бота для аналитиков
-        analyst_bot = AnalystBot(
-            config['analyst_bot_token'],
-            system
-        )
+        # Процесс для бота граждан
+        citizen_process = multiprocessing.Process(target=run_citizen_bot, args=(config,))
+        processes.append(citizen_process)
         
-        # Запуск веб-интерфейса
-        web_app = create_dashboard_app(system)
+        # Процесс для бота аналитиков
+        analyst_process = multiprocessing.Process(target=run_analyst_bot, args=(config,))
+        processes.append(analyst_process)
         
-        logger.info("Система обработки обращений запущена")
+        # Процесс для веб-интерфейса
+        dashboard_process = multiprocessing.Process(target=run_dashboard, args=(config,))
+        processes.append(dashboard_process)
         
-        # В продакшене лучше использовать отдельные процессы
-        citizen_bot.run()
-        # analyst_bot.run() в отдельном процессе
-        # web_app.run() в отдельном процессе
+        # Запуск всех процессов
+        for process in processes:
+            process.start()
         
+        logger.info("✅ Все компоненты системы запущены")
+        
+        # Ожидание завершения процессов
+        for process in processes:
+            process.join()
+            
     except Exception as e:
-        logger.error(f"Ошибка запуска системы: {e}")
+        logger.error(f"❌ Ошибка запуска системы: {e}")
 
 if __name__ == "__main__":
     main()
