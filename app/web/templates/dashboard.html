@@ -10,6 +10,9 @@
         .filters { margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        .loading { color: #666; text-align: center; padding: 20px; }
+        .error { color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .empty-state { color: #666; text-align: center; padding: 40px; }
     </style>
 </head>
 <body>
@@ -27,81 +30,290 @@
     <div class="dashboard">
         <div class="card">
             <h3>Распределение по типам</h3>
-            <canvas id="typeChart"></canvas>
+            <div id="typeChartContainer">
+                <div class="loading" id="typeChartLoading">Загрузка данных...</div>
+                <canvas id="typeChart" style="display: none;"></canvas>
+                <div class="empty-state" id="typeChartEmpty" style="display: none;">Нет данных для отображения</div>
+                <div class="error" id="typeChartError" style="display: none;"></div>
+            </div>
         </div>
         
         <div class="card">
             <h3>Статусы обращений</h3>
-            <canvas id="statusChart"></canvas>
+            <div id="statusChartContainer">
+                <div class="loading" id="statusChartLoading">Загрузка данных...</div>
+                <canvas id="statusChart" style="display: none;"></canvas>
+                <div class="empty-state" id="statusChartEmpty" style="display: none;">Нет данных для отображения</div>
+                <div class="error" id="statusChartError" style="display: none;"></div>
+            </div>
         </div>
         
         <div class="card" style="grid-column: span 2;">
             <h3>Последние обращения</h3>
-            <div id="appealsTable"></div>
+            <div id="appealsTableContainer">
+                <div class="loading" id="appealsTableLoading">Загрузка данных...</div>
+                <div id="appealsTable" style="display: none;"></div>
+                <div class="empty-state" id="appealsTableEmpty" style="display: none;">Нет обращений для отображения</div>
+                <div class="error" id="appealsTableError" style="display: none;"></div>
+            </div>
         </div>
     </div>
 
     <script>
         let typeChart, statusChart;
 
+        // Функции для управления состоянием UI
+        function showLoading(elementId) {
+            document.getElementById(elementId + 'Loading').style.display = 'block';
+            document.getElementById(elementId).style.display = 'none';
+            document.getElementById(elementId + 'Empty').style.display = 'none';
+            document.getElementById(elementId + 'Error').style.display = 'none';
+        }
+
+        function showContent(elementId) {
+            document.getElementById(elementId + 'Loading').style.display = 'none';
+            document.getElementById(elementId).style.display = 'block';
+            document.getElementById(elementId + 'Empty').style.display = 'none';
+            document.getElementById(elementId + 'Error').style.display = 'none';
+        }
+
+        function showEmpty(elementId) {
+            document.getElementById(elementId + 'Loading').style.display = 'none';
+            document.getElementById(elementId).style.display = 'none';
+            document.getElementById(elementId + 'Empty').style.display = 'block';
+            document.getElementById(elementId + 'Error').style.display = 'none';
+        }
+
+        function showError(elementId, message) {
+            document.getElementById(elementId + 'Loading').style.display = 'none';
+            document.getElementById(elementId).style.display = 'none';
+            document.getElementById(elementId + 'Empty').style.display = 'none';
+            const errorElement = document.getElementById(elementId + 'Error');
+            errorElement.style.display = 'block';
+            errorElement.textContent = message;
+        }
+
         async function loadData() {
             const period = document.getElementById('periodSelect').value;
             
-            // Загрузка статистики
-            const statsResponse = await fetch(`/api/stats?period=${period}`);
-            const stats = await statsResponse.json();
+            showLoading('typeChart');
+            showLoading('statusChart');
+            showLoading('appealsTable');
             
-            // Загрузка трендов
-            const trendsResponse = await fetch(`/api/trends?period=${period}`);
-            const trends = await trendsResponse.json();
+            try {
+                // Загрузка статистики
+                const statsResponse = await fetch(`/api/stats?period=${period}`);
+                if (!statsResponse.ok) {
+                    throw new Error(`Ошибка загрузки статистики: ${statsResponse.status}`);
+                }
+                const stats = await statsResponse.json();
+                
+                // Загрузка трендов
+                const trendsResponse = await fetch(`/api/trends?period=${period}`);
+                if (!trendsResponse.ok) {
+                    throw new Error(`Ошибка загрузки трендов: ${trendsResponse.status}`);
+                }
+                const trends = await trendsResponse.json();
+                
+                // Загрузка обращений
+                const appealsResponse = await fetch('/api/appeals?limit=10');
+                if (!appealsResponse.ok) {
+                    throw new Error(`Ошибка загрузки обращений: ${appealsResponse.status}`);
+                }
+                const appeals = await appealsResponse.json();
+                
+                updateCharts(stats, trends);
+                updateAppealsTable(appeals);
+                
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                showError('typeChart', error.message);
+                showError('statusChart', error.message);
+                showError('appealsTable', error.message);
+            }
+        }
+
+        function processTypeData(stats) {
+            // Агрегируем данные по типам обращений
+            const typeCounts = {};
             
-            // Загрузка обращений
-            const appealsResponse = await fetch('/api/appeals?limit=10');
-            const appeals = await appealsResponse.json();
+            stats.forEach(stat => {
+                const type = stat.type || 'Не определен';
+                typeCounts[type] = (typeCounts[type] || 0) + stat.count;
+            });
             
-            updateCharts(stats, trends);
-            updateAppealsTable(appeals);
+            const labels = Object.keys(typeCounts);
+            const data = Object.values(typeCounts);
+            
+            // Генерируем цвета для диаграммы
+            const backgroundColors = [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+                '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+            ];
+            
+            return {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: backgroundColors.slice(0, labels.length),
+                    hoverBackgroundColor: backgroundColors.slice(0, labels.length)
+                }]
+            };
+        }
+
+        function processStatusData(stats) {
+            // Агрегируем данные по статусам
+            const statusCounts = {};
+            
+            stats.forEach(stat => {
+                const status = stat.status || 'Не определен';
+                statusCounts[status] = (statusCounts[status] || 0) + stat.count;
+            });
+            
+            const labels = Object.keys(statusCounts);
+            const data = Object.values(statusCounts);
+            
+            // Генерируем цвета для статусов
+            const statusColors = {
+                'new': '#36A2EB',
+                'answered': '#4BC0C0', 
+                'in_progress': '#FFCE56',
+                'requires_manual_review': '#FF6384',
+                'closed': '#9966FF'
+            };
+            
+            const backgroundColors = labels.map(label => statusColors[label] || '#C9CBCF');
+            
+            return {
+                labels: labels,
+                datasets: [{
+                    label: 'Количество обращений',
+                    data: data,
+                    backgroundColor: backgroundColors,
+                    borderColor: backgroundColors,
+                    borderWidth: 1
+                }]
+            };
         }
 
         function updateCharts(stats, trends) {
-            // Обновление графиков
-            const typeData = processTypeData(stats);
-            const statusData = processStatusData(stats);
+            if (!stats || stats.length === 0) {
+                showEmpty('typeChart');
+                showEmpty('statusChart');
+                return;
+            }
             
-            if (typeChart) typeChart.destroy();
-            if (statusChart) statusChart.destroy();
-            
-            typeChart = new Chart(document.getElementById('typeChart'), {
-                type: 'pie',
-                data: typeData
-            });
-            
-            statusChart = new Chart(document.getElementById('statusChart'), {
-                type: 'bar',
-                data: statusData
-            });
+            try {
+                // Обновление графиков
+                const typeData = processTypeData(stats);
+                const statusData = processStatusData(stats);
+                
+                if (typeChart) typeChart.destroy();
+                if (statusChart) statusChart.destroy();
+                
+                // Создаем круговую диаграмму для типов
+                if (typeData.labels.length > 0) {
+                    typeChart = new Chart(document.getElementById('typeChart'), {
+                        type: 'pie',
+                        data: typeData,
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Распределение по типам обращений'
+                                }
+                            }
+                        }
+                    });
+                    showContent('typeChart');
+                } else {
+                    showEmpty('typeChart');
+                }
+                
+                // Создаем столбчатую диаграмму для статусов
+                if (statusData.labels.length > 0) {
+                    statusChart = new Chart(document.getElementById('statusChart'), {
+                        type: 'bar',
+                        data: statusData,
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Статусы обращений'
+                                }
+                            }
+                        }
+                    });
+                    showContent('statusChart');
+                } else {
+                    showEmpty('statusChart');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка обновления графиков:', error);
+                showError('typeChart', 'Ошибка построения графиков');
+                showError('statusChart', 'Ошибка построения графиков');
+            }
         }
 
         function updateAppealsTable(appeals) {
-            const table = document.getElementById('appealsTable');
-            let html = '<table><tr><th>ID</th><th>Тип</th><th>Текст</th><th>Статус</th><th>Дата</th></tr>';
+            if (!appeals || appeals.length === 0) {
+                showEmpty('appealsTable');
+                return;
+            }
             
-            appeals.forEach(appeal => {
-                html += `<tr>
-                    <td>${appeal.id}</td>
-                    <td>${appeal.type || 'не определен'}</td>
-                    <td>${appeal.text.substring(0, 100)}...</td>
-                    <td>${appeal.status}</td>
-                    <td>${new Date(appeal.created_at).toLocaleDateString()}</td>
-                </tr>`;
-            });
-            
-            html += '</table>';
-            table.innerHTML = html;
+            try {
+                const table = document.getElementById('appealsTable');
+                let html = '<table><tr><th>ID</th><th>Тип</th><th>Текст</th><th>Статус</th><th>Дата</th></tr>';
+                
+                appeals.forEach(appeal => {
+                    const appealType = appeal.type || 'не определен';
+                    const appealText = appeal.text ? appeal.text.substring(0, 100) + '...' : '';
+                    const appealStatus = appeal.status || 'не определен';
+                    const appealDate = appeal.created_at ? new Date(appeal.created_at).toLocaleDateString() : 'не указана';
+                    
+                    html += `<tr>
+                        <td>${appeal.id}</td>
+                        <td>${appealType}</td>
+                        <td>${appealText}</td>
+                        <td>${appealStatus}</td>
+                        <td>${appealDate}</td>
+                    </tr>`;
+                });
+                
+                html += '</table>';
+                table.innerHTML = html;
+                showContent('appealsTable');
+                
+            } catch (error) {
+                console.error('Ошибка обновления таблицы:', error);
+                showError('appealsTable', 'Ошибка загрузки таблицы обращений');
+            }
         }
 
         document.getElementById('periodSelect').addEventListener('change', loadData);
+        
+        // Загружаем данные при старте
         loadData();
+        
+        // Автообновление каждые 30 секунд
+        setInterval(loadData, 30000);
     </script>
 </body>
 </html>
