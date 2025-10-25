@@ -3,6 +3,7 @@ from mysql.connector import Error
 import logging
 from datetime import datetime
 import threading
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -45,10 +46,11 @@ class DatabaseManager:
             raise
 
     def _create_tables(self):
-        """Создание таблиц для системы обращений"""
+        """Создание таблиц для системы обращений и населенных пунктов"""
         try:
             cursor = self.connection.cursor()
 
+            # Таблица обращений (обновленная с полями для адреса)
             create_appeals_table = """
             CREATE TABLE IF NOT EXISTS appeals (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -61,6 +63,10 @@ class DatabaseManager:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 responded_at TIMESTAMP NULL,
                 tags JSON,
+                settlement VARCHAR(255),
+                street VARCHAR(255),
+                house VARCHAR(50),
+                full_address TEXT,
                 INDEX idx_user (user_id),
                 INDEX idx_type (type),
                 INDEX idx_status (status),
@@ -68,6 +74,7 @@ class DatabaseManager:
             )
             """
 
+            # Таблица трендов
             create_trends_table = """
             CREATE TABLE IF NOT EXISTS trends (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -79,8 +86,25 @@ class DatabaseManager:
             )
             """
 
+            # Таблица населенных пунктов (для парсера)
+            create_settlements_table = """
+            CREATE TABLE IF NOT EXISTS settlements (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                type VARCHAR(100) NOT NULL,
+                district VARCHAR(255),
+                population INT,
+                latitude DECIMAL(10, 8),
+                longitude DECIMAL(11, 8),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_name (name),
+                INDEX idx_district (district)
+            )
+            """
+
             cursor.execute(create_appeals_table)
             cursor.execute(create_trends_table)
+            cursor.execute(create_settlements_table)
             self.connection.commit()
             cursor.close()
             logger.info("✅ Таблицы созданы успешно")
@@ -90,25 +114,37 @@ class DatabaseManager:
             raise
 
     def store_appeal(self, appeal_data):
-        """Сохранение обращения в базу"""
+        """Сохранение обращения в базу с поддержкой адреса"""
         conn = self.get_connection()
         try:
             cursor = conn.cursor()
             
-            query = """
-            INSERT INTO appeals (user_id, text, type, platform, status, created_at)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            """
-            
-            cursor.execute(query, (
+            # Определяем поля и значения в зависимости от наличия адреса
+            fields = ['user_id', 'text', 'type', 'platform', 'status', 'created_at']
+            placeholders = ['%s'] * len(fields)
+            values = [
                 appeal_data['user_id'],
                 appeal_data['text'],
                 appeal_data.get('type'),
                 appeal_data.get('platform'),
                 appeal_data.get('status', 'new'),
                 appeal_data.get('created_at')
-            ))
+            ]
             
+            # Добавляем поля адреса, если они есть
+            address_fields = ['settlement', 'street', 'house', 'full_address']
+            for field in address_fields:
+                if field in appeal_data and appeal_data[field]:
+                    fields.append(field)
+                    placeholders.append('%s')
+                    values.append(appeal_data[field])
+            
+            query = f"""
+            INSERT INTO appeals ({', '.join(fields)})
+            VALUES ({', '.join(placeholders)})
+            """
+            
+            cursor.execute(query, values)
             appeal_id = cursor.lastrowid
             cursor.close()
             
@@ -119,6 +155,7 @@ class DatabaseManager:
             logger.error(f"❌ Ошибка сохранения обращения: {e}")
             raise
 
+    # Остальные методы остаются без изменений...
     def update_appeal(self, appeal_id, update_data):
         """Обновление обращения"""
         conn = self.get_connection()

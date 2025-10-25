@@ -9,6 +9,7 @@ from processing.analyzer import AppealsAnalyzer
 from bot.citizen_bot import CitizenBot
 from bot.analyst_bot import AnalystBot
 from web.dashboard import create_dashboard_app
+from processing.data_parser import SettlementParser  # Добавляем импорт парсера
 
 logging.basicConfig(
     level=logging.INFO,
@@ -29,21 +30,33 @@ class AppealsProcessingSystem:
         self.database = DatabaseManager(config['mysql_config'])
         self.analyzer = AppealsAnalyzer(self.gigachat, self.database)
         
-    def process_citizen_appeal(self, user_id, appeal_text, platform="telegram"):
-        """Обработка обращения гражданина"""
+    def process_citizen_appeal(self, user_id, appeal_text, platform="telegram", address_info=None):
+        """Обработка обращения гражданина с адресом"""
         try:
             # Классификация обращения
             appeal_type = self.analyzer.classify_appeal(appeal_text)
             
-            # Сохранение в базу
-            appeal_id = self.database.store_appeal({
+            # Формируем данные для сохранения
+            appeal_data = {
                 'user_id': user_id,
                 'text': appeal_text,
                 'type': appeal_type,
                 'platform': platform,
                 'status': 'new',
                 'created_at': datetime.now()
-            })
+            }
+            
+            # Добавляем информацию об адресе, если есть
+            if address_info:
+                appeal_data.update({
+                    'settlement': address_info.get('settlement'),
+                    'street': address_info.get('street'),
+                    'house': address_info.get('house'),
+                    'full_address': address_info.get('full_address')
+                })
+            
+            # Сохранение в базу
+            appeal_id = self.database.store_appeal(appeal_data)
             
             # Генерация ответа для типовых обращений
             if appeal_type in self.analyzer.get_common_types():
@@ -62,10 +75,28 @@ class AppealsProcessingSystem:
         """Получение аналитики за период"""
         return self.analyzer.analyze_trends(period_days)
 
+def init_settlements_database(config):
+    """Инициализация базы данных населенных пунктов"""
+    try:
+        from processing.data_parser import SettlementParser
+        
+        parser = SettlementParser(config['mysql_config'])
+        success = parser.run()
+        
+        if success:
+            logger.info("✅ База данных населенных пунктов инициализирована")
+        else:
+            logger.error("❌ Не удалось инициализировать базу населенных пунктов")
+            
+        return success
+    except Exception as e:
+        logger.error(f"❌ Ошибка инициализации базы населенных пунктов: {e}")
+        return False
+
 def run_citizen_bot(config):
     """Запуск бота для граждан в отдельном процессе"""
     system = AppealsProcessingSystem(config)
-    citizen_bot = CitizenBot(config['telegram_bot_token'], system)
+    citizen_bot = CitizenBot(config['telegram_bot_token'], system, config['mysql_config'])  # Передаем db_config
     logger.info("🚀 Запуск бота для граждан...")
     citizen_bot.run()
 
@@ -92,6 +123,9 @@ def main():
         
         # Инициализируем единый менеджер базы данных
         DatabaseManager(config['mysql_config'])
+        
+        # Инициализируем базу данных населенных пунктов
+        init_settlements_database(config)
         
         logger.info("✅ Система обработки обращений инициализирована")
         
