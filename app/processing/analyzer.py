@@ -126,11 +126,16 @@ class AppealsAnalyzer:
                 appeal_type = appeal['type'] or 'другое'
                 type_stats[appeal_type] = type_stats.get(appeal_type, 0) + 1
             
+            # Убедимся, что themes - это список
+            if not isinstance(themes, list):
+                logger.warning("⚠️ Темы не являются списком, преобразуем в пустой список")
+                themes = []
+            
             trends = {
                 'period_days': period_days,
                 'total_appeals': len(appeals),
                 'type_distribution': type_stats,
-                'common_themes': themes[:10],
+                'common_themes': themes[:10],  # Берем только первые 10 тем
                 'response_rate': self._calculate_response_rate(appeals),
                 'last_updated': datetime.now().isoformat()
             }
@@ -155,19 +160,36 @@ class AppealsAnalyzer:
             Верни в формате JSON: [{{"theme": "название темы", "frequency": "высокая/средняя/низкая"}}]
             
             Тексты: {combined_text[:3000]}
+            
+            Важно: верни только валидный JSON без дополнительного текста.
             """
             
             response = self.gigachat.chat_completion([
-                {"role": "system", "content": "Ты аналитик, выделяющий основные темы из обращений"},
+                {"role": "system", "content": "Ты аналитик, выделяющий основные темы из обращений. Ты возвращаешь только валидный JSON."},
                 {"role": "user", "content": prompt}
             ])
+            
+            # Очистка ответа от возможного некорректного форматирования
+            response = response.strip()
+            
+            # Пытаемся найти JSON в ответе (на случай, если AI добавил пояснения)
+            json_match = re.search(r'\[.*\]', response, re.DOTALL)
+            if json_match:
+                response = json_match.group(0)
             
             # Парсинг JSON ответа
             try:
                 themes = json.loads(response)
-                return themes
-            except:
-                logger.warning("❌ Не удалось распарсить JSON ответ от GigaChat, используем fallback")
+                # Убедимся, что это список
+                if isinstance(themes, list):
+                    logger.info(f"✅ Успешно извлечены темы: {len(themes)}")
+                    return themes
+                else:
+                    logger.warning("❌ Ответ от GigaChat не является списком")
+                    return self._extract_themes_fallback(texts)
+            except json.JSONDecodeError as e:
+                logger.warning(f"❌ Не удалось распарсить JSON ответ от GigaChat: {e}")
+                logger.warning(f"📄 Ответ был: {response}")
                 return self._extract_themes_fallback(texts)
             
         except Exception as e:
@@ -180,30 +202,55 @@ class AppealsAnalyzer:
         if not texts:
             return []
             
+        # Объединяем все тексты для анализа
+        all_text = " ".join(texts).lower()
+        
         keywords = {
-            'дороги': ['дорог', 'асфальт', 'яма', 'ремонт дорог'],
-            'ЖКХ': ['жкх', 'управляющая', 'отоплен', 'водоснабжен', 'мусор'],
-            'транспорт': ['автобус', 'остановк', 'маршрут', 'транспорт'],
-            'благоустройство': ['парк', 'сквер', 'детская площадка', 'озеленен'],
-            'шум': ['шум', 'громко', 'тишина'],
-            'документы': ['справк', 'документ', 'получить']
+            'дороги': ['дорог', 'асфальт', 'яма', 'ремонт дорог', 'выбоин'],
+            'ЖКХ': ['жкх', 'управляющая', 'отоплен', 'водоснабжен', 'мусор', 'канализац', 'коммунал'],
+            'транспорт': ['автобус', 'остановк', 'маршрут', 'транспорт', 'обществен', 'транспорт'],
+            'благоустройство': ['парк', 'сквер', 'детская площадка', 'озеленен', 'лавочк', 'скамейк'],
+            'шум': ['шум', 'громко', 'тишина', 'шумн'],
+            'документы': ['справк', 'документ', 'получить', 'оформлен'],
+            'освещение': ['освещен', 'фонар', 'свет', 'темно', 'улиц'],
+            'уборка': ['уборк', 'мусор', 'чистота', 'убрать', 'захламлен'],
+            'вода': ['вод', 'напор', 'качеств', 'питьев'],
+            'отопление': ['отоплен', 'батаре', 'тепл', 'холодн']
         }
         
         themes = []
         for theme, words in keywords.items():
-            count = sum(1 for text in texts if any(word in text.lower() for word in words))
+            count = sum(1 for word in words if word in all_text)
             if count > 0:
-                frequency = "высокая" if count > 10 else "средняя" if count > 5 else "низкая"
-                themes.append({"theme": theme, "frequency": frequency, "count": count})
+                # Определяем частоту по количеству упоминаний
+                total_words = len(all_text.split())
+                frequency_percentage = (count / total_words) * 1000  # Умножаем для наглядности
+                
+                if frequency_percentage > 5:
+                    frequency = "высокая"
+                elif frequency_percentage > 2:
+                    frequency = "средняя"
+                else:
+                    frequency = "низкая"
+                
+                themes.append({
+                    "theme": theme, 
+                    "frequency": frequency,
+                    "count": count
+                })
         
-        return sorted(themes, key=lambda x: x.get('count', 0), reverse=True)
+        # Сортируем по частоте
+        themes.sort(key=lambda x: x.get('count', 0), reverse=True)
+        
+        logger.info(f"🔄 Использован резервный метод извлечения тем: {len(themes)} тем")
+        return themes[:10]  # Возвращаем только топ-10
 
     def _calculate_response_rate(self, appeals):
         """Расчет процента отвеченных обращений"""
         if not appeals:
             return 0
             
-        answered = sum(1 for a in appeals if a['status'] == 'answered')
+        answered = sum(1 for a in appeals if a.get('status') == 'answered')
         total = len(appeals)
         return round((answered / total * 100), 2) if total > 0 else 0
 
