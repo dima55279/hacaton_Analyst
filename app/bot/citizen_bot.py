@@ -54,20 +54,54 @@ class CitizenBot:
         context.user_data.clear()
         
         instruction_text = """
-🏠 Для обработки вашего обращения нам нужен адрес.
+    🏠 Для обработки вашего обращения нам нужен адрес.
 
-Пожалуйста, введите название вашего населенного пункта (город, село, деревня):
-"""
+    Пожалуйста, введите название вашего населенного пункта в Тамбовской области (город, село, деревня):
+
+    📝 Примеры: 
+    • Тамбов
+    • Мичуринск  
+    • Котовск
+    • Рассказово
+    • село Тулиновка
+    • деревня Красносвободное
+    """
         await update.message.reply_text(instruction_text, reply_markup=ReplyKeyboardRemove())
         return AddressStates.WAITING_FOR_SETTLEMENT
 
     async def handle_settlement(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Обработка ввода населенного пункта с исправленной логикой выбора"""
+        """Обработка ввода населенного пункта с исправленной логикой"""
         user_input = update.message.text.strip()
         
-        # Если это выбор из списка (содержит скобки с районом)
+        # Проверяем, не является ли это выбором из предложенных вариантов
+        settlement_mapping = context.user_data.get('settlement_mapping')
+        if settlement_mapping and user_input in settlement_mapping:
+            # Это выбор из предложенных вариантов - используем сохраненные данные
+            selected_settlement = settlement_mapping[user_input]
+            
+            context.user_data['settlement_info'] = {
+                'name': selected_settlement['name'],
+                'type': selected_settlement['type'],
+                'district': selected_settlement['district'],
+                'population': selected_settlement['population']
+            }
+            context.user_data['settlement'] = selected_settlement['name']
+            
+            # Очищаем маппинг
+            del context.user_data['settlement_mapping']
+            
+            await update.message.reply_text(
+                f"✅ Выбран населенный пункт: {selected_settlement['type']} {selected_settlement['name']}, {selected_settlement['district']}\n\n"
+                f"Теперь введите название улицы:",
+                reply_markup=ReplyKeyboardRemove()
+            )
+            return AddressStates.WAITING_FOR_STREET
+        
+        # Если это не выбор из списка, обрабатываем как обычный ввод
+        settlement_name = user_input
+        
+        # Если это выбор из списка (содержит скобки с районом) - извлекаем чистое название
         if '(' in user_input and ')' in user_input:
-            # Это выбор из предложенных вариантов - извлекаем чистое название
             settlement_name = user_input.split('(')[0].strip()
             
             # Удаляем тип населенного пункта из начала, если он есть
@@ -76,11 +110,9 @@ class CitizenBot:
                 if settlement_name.startswith(prefix):
                     settlement_name = settlement_name[len(prefix):].strip()
                     break
-        else:
-            # Это прямой ввод пользователя
-            settlement_name = user_input
-        
-        context.user_data['settlement'] = settlement_name
+
+        # Сохраняем введенное название временно
+        context.user_data['settlement_input'] = settlement_name
         
         # Проверяем существование населенного пункта в базе
         try:
@@ -108,6 +140,17 @@ class CitizenBot:
             cursor.close()
             conn.close()
             
+            # Убираем дубликаты
+            unique_results = []
+            seen_names = set()
+            for result in results:
+                unique_key = f"{result['name']}_{result['district']}"
+                if unique_key not in seen_names:
+                    unique_results.append(result)
+                    seen_names.add(unique_key)
+            
+            results = unique_results
+            
             if results:
                 # Если найдены совпадения
                 if len(results) == 1:
@@ -119,6 +162,7 @@ class CitizenBot:
                         'district': result['district'],
                         'population': result['population']
                     }
+                    context.user_data['settlement'] = result['name']
                     
                     await update.message.reply_text(
                         f"✅ Найден населенный пункт: {result['type']} {result['name']}, {result['district']}\n\n"
@@ -142,27 +186,37 @@ class CitizenBot:
                         display_names[i]: results[i] for i in range(len(display_names))
                     }
                     
-                    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+                    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
                     await update.message.reply_text(
                         f"Найдено {len(results)} населенных пунктов. Выберите подходящий:",
                         reply_markup=reply_markup
                     )
                     return AddressStates.WAITING_FOR_SETTLEMENT
             else:
-                # Населенный пункт не найден, но продолжаем
-                await update.message.reply_text(
-                    f"⚠️ Населенный пункт '{settlement_name}' не найден в базе. "
-                    f"Продолжаем с введенным названием.\n\n"
-                    f"Теперь введите название улицы:"
-                )
-                return AddressStates.WAITING_FOR_STREET
+                # НАСЕЛЕННЫЙ ПУНКТ НЕ НАЙДЕН - НЕ ПРОДОЛЖАЕМ ПРОЦЕСС
+                error_message = f"""
+    ❌ Населенный пункт '{settlement_name}' не найден в базе данных.
+
+    Возможные причины:
+    • Проверьте правильность написания названия
+    • Используйте полное официальное название
+    • Убедитесь, что населенный пункт находится в Тамбовской области
+
+    Пожалуйста, введите корректное название населенного пункта еще раз:
+    """
+                await update.message.reply_text(error_message)
+                # Остаемся в том же состоянии для повторного ввода
+                return AddressStates.WAITING_FOR_SETTLEMENT
                 
         except Exception as e:
             logger.error(f"Ошибка поиска населенного пункта: {e}")
-            await update.message.reply_text(
-                f"Теперь введите название улицы:"
-            )
-            return AddressStates.WAITING_FOR_STREET
+            error_message = f"""
+    ⚠️ Произошла ошибка при поиске населенного пункта.
+
+    Пожалуйста, введите название населенного пункта еще раз:
+    """
+            await update.message.reply_text(error_message)
+            return AddressStates.WAITING_FOR_SETTLEMENT
 
     async def handle_street(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка ввода улицы"""
@@ -196,7 +250,11 @@ class CitizenBot:
         }
         
         if 'settlement_info' in context.user_data:
-            address_info.update(context.user_data['settlement_info'])
+            settlement_info = context.user_data['settlement_info']
+            address_info.update({
+                'district': settlement_info.get('district'),
+                'settlement_type': settlement_info.get('type')
+            })
         
         context.user_data['address_info'] = address_info
         
@@ -346,6 +404,26 @@ class CitizenBot:
         self.application.add_handler(address_conv_handler)
         self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
 
+    async def cancel_address(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Отмена процесса ввода адреса с информативным сообщением"""
+        context.user_data.clear()
+        
+        cancel_message = """
+    ❌ Ввод адреса отменен.
+
+    Вы можете начать заново, нажав «Подать обращение».
+
+    Если у вас возникли проблемы с определением населенного пункта, убедитесь что:
+    • Вы вводите официальное название
+    • Населенный пункт находится в Тамбовской области
+    • Используете правильные сокращения (с., д., г., пгт.)
+    """
+        keyboard = [['Подать обращение', 'Мои обращения']]
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        
+        await update.message.reply_text(cancel_message, reply_markup=reply_markup)
+        return ConversationHandler.END
+    
     def run(self):
         """Запуск бота с созданием нового event loop"""
         try:

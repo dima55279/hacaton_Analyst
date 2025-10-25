@@ -58,14 +58,16 @@ class AppealsProcessingSystem:
             # Сохранение в базу
             appeal_id = self.database.store_appeal(appeal_data)
             
-            # Генерация ответа для типовых обращений
+            # Генерация ответа для типовых обращений с передачей адресной информации
             if appeal_type in self.analyzer.get_common_types():
-                response = self.analyzer.generate_response(appeal_id, appeal_text, appeal_type)
+                response = self.analyzer.generate_response(appeal_id, appeal_text, appeal_type, address_info)
                 self.database.update_appeal(appeal_id, {'response': response, 'status': 'answered'})
                 return response
             else:
-                self.database.update_appeal(appeal_id, {'status': 'requires_manual_review'})
-                return "Ваше обращение принято и передано специалисту. Ответ будет предоставлен в ближайшее время."
+                # Для нетиповых обращений также генерируем ответ с контактами муниципалитета
+                response = self.analyzer.generate_response(appeal_id, appeal_text, appeal_type, address_info)
+                self.database.update_appeal(appeal_id, {'response': response, 'status': 'requires_manual_review'})
+                return response
                 
         except Exception as e:
             logger.error(f"Ошибка обработки обращения: {e}")

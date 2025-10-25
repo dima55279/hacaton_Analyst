@@ -67,6 +67,7 @@ class DatabaseManager:
                 street VARCHAR(255),
                 house VARCHAR(50),
                 full_address TEXT,
+                municipality_contacts JSON,  -- Новое поле для хранения контактов муниципалитета
                 INDEX idx_user (user_id),
                 INDEX idx_type (type),
                 INDEX idx_status (status),
@@ -101,7 +102,6 @@ class DatabaseManager:
                 INDEX idx_district (district)
             )
             """
-
             cursor.execute(create_appeals_table)
             cursor.execute(create_trends_table)
             cursor.execute(create_settlements_table)
