@@ -124,8 +124,10 @@ def main():
         with open("config.json", "r") as f:
             config = json.load(f)
         
-        # Инициализируем единый менеджер базы данных
-        DatabaseManager(config['mysql_config'])
+        db_manager = DatabaseManager(config['mysql_config'])
+        
+        # Выполняем миграцию статусов на русские
+        db_manager.migrate_statuses_to_russian()
         
         # Инициализируем базу данных населенных пунктов
         init_settlements_database(config)

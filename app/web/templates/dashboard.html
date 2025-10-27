@@ -218,7 +218,7 @@
             const statusCounts = {};
             
             stats.forEach(stat => {
-                const status = stat.status || 'Не определен';
+                const status = stat.status || 'не определен';
                 statusCounts[status] = (statusCounts[status] || 0) + stat.count;
             });
             
@@ -227,11 +227,11 @@
             
             // Генерируем цвета для статусов
             const statusColors = {
-                'new': '#36A2EB',
-                'answered': '#4BC0C0', 
-                'in_progress': '#FFCE56',
-                'requires_manual_review': '#FF6384',
-                'closed': '#9966FF'
+                'новое': '#36A2EB',
+                'отвечено': '#4BC0C0', 
+                'в работе': '#FFCE56',
+                'требует проверки': '#FF6384',
+                'закрыто': '#9966FF'
             };
             
             const backgroundColors = labels.map(label => statusColors[label] || '#C9CBCF');
@@ -247,6 +247,7 @@
                 }]
             };
         }
+
 
         function updateCharts(stats, trends) {
             if (!stats || stats.length === 0) {

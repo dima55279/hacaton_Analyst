@@ -141,7 +141,7 @@ class DatabaseManager:
                 appeal_data['text'],
                 appeal_data.get('type'),
                 appeal_data.get('platform'),
-                appeal_data.get('status', 'new'),
+                'новое',  # Все новые обращения получают статус "новое"
                 appeal_data.get('created_at')
             ]
             
@@ -169,6 +169,41 @@ class DatabaseManager:
             logger.error(f"❌ Ошибка сохранения обращения: {e}")
             raise
 
+    def migrate_statuses_to_russian(self):
+        """Миграция статусов с английских на русские"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            
+            # Расширенный mapping для миграции
+            status_mapping = {
+                'new': 'новое',
+                'answered': 'отвечено', 
+                'in_progress': 'в работе',
+                'requires_manual_review': 'требует проверки',
+                'requires_review': 'требует проверки',
+                'manual_review': 'требует проверки',
+                'closed': 'закрыто',
+                'completed': 'закрыто'
+            }
+            
+            for eng_status, ru_status in status_mapping.items():
+                cursor.execute(
+                    "UPDATE appeals SET status = %s WHERE status = %s",
+                    (ru_status, eng_status)
+                )
+                updated_count = cursor.rowcount
+                if updated_count > 0:
+                    logger.info(f"🔄 Мигрированы статусы: {eng_status} -> {ru_status} ({updated_count} записей)")
+            
+            conn.commit()
+            cursor.close()
+            logger.info("✅ Миграция статусов завершена")
+            
+        except Error as e:
+            logger.error(f"❌ Ошибка миграции статусов: {e}")
+            raise
+    
     def _determine_district_by_settlement(self, settlement):
         """Определение района по названию населенного пункта"""
         if not settlement:
@@ -215,7 +250,7 @@ class DatabaseManager:
         return None
 
     def get_municipality_stats(self, period_days=30):
-        """Статистика по муниципалитетам за период"""
+        """Статистика по муниципалитетам за период с русскими статусами"""
         conn = self.get_connection()
         try:
             cursor = conn.cursor(dictionary=True)
@@ -224,10 +259,11 @@ class DatabaseManager:
             SELECT 
                 COALESCE(a.district, 'Не указан') as municipality,
                 COUNT(*) as appeal_count,
-                COUNT(CASE WHEN a.status = 'answered' THEN 1 END) as answered_count,
-                COUNT(CASE WHEN a.status = 'new' THEN 1 END) as new_count,
-                COUNT(CASE WHEN a.status = 'in_progress' THEN 1 END) as in_progress_count,
-                ROUND(COUNT(CASE WHEN a.status = 'answered' THEN 1 END) * 100.0 / COUNT(*), 2) as response_rate
+                COUNT(CASE WHEN a.status = 'отвечено' THEN 1 END) as answered_count,
+                COUNT(CASE WHEN a.status = 'новое' THEN 1 END) as new_count,
+                COUNT(CASE WHEN a.status = 'в работе' THEN 1 END) as in_progress_count,
+                COUNT(CASE WHEN a.status = 'требует проверки' THEN 1 END) as requires_review_count,
+                ROUND(COUNT(CASE WHEN a.status = 'отвечено' THEN 1 END) * 100.0 / COUNT(*), 2) as response_rate
             FROM appeals a
             WHERE a.created_at >= DATE_SUB(NOW(), INTERVAL %s DAY)
             GROUP BY COALESCE(a.district, 'Не указан')
@@ -390,7 +426,7 @@ class DatabaseManager:
             return []
 
     def get_appeals_stats(self, period_days=30):
-        """Статистика по обращениям за период"""
+        """Статистика по обращениям за период с русскими статусами"""
         conn = self.get_connection()
         try:
             cursor = conn.cursor(dictionary=True)
@@ -417,7 +453,7 @@ class DatabaseManager:
             return []
 
     def get_real_time_stats(self):
-        """Получение актуальной статистики в реальном времени"""
+        """Получение актуальной статистики в реальном времени с русскими статусами"""
         conn = self.get_connection()
         try:
             cursor = conn.cursor(dictionary=True)
@@ -426,7 +462,7 @@ class DatabaseManager:
             cursor.execute("SELECT COUNT(*) as total FROM appeals")
             total = cursor.fetchone()['total']
             
-            # По статусам
+            # По статусам (русские)
             cursor.execute("""
                 SELECT status, COUNT(*) as count 
                 FROM appeals 
@@ -467,6 +503,7 @@ class DatabaseManager:
         except Error as e:
             logger.error(f"❌ Ошибка получения реальной статистики: {e}")
             return {}
+
 
     def close(self):
         """Закрытие соединения"""

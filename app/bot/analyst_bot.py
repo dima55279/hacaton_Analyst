@@ -579,51 +579,94 @@ class AnalystBot:
         return fig
 
     def _create_status_bar_chart(self, stats):
-        """Создание столбчатой диаграммы по статусам обращений"""
+        """Создание цветной столбчатой диаграммы по статусам обращений"""
         # Агрегируем данные по статусам
         status_counts = {}
         for stat in stats:
-            status = stat['status'] or 'Не определен'
+            status = stat['status'] or 'не определен'
             status_counts[status] = status_counts.get(status, 0) + stat['count']
         
         # Подготавливаем данные для диаграммы
         if not status_counts:
             # Создаем пустую диаграмму если нет данных
             fig, ax = plt.subplots(figsize=(10, 6))
-            ax.text(0.5, 0.5, 'Нет данных', ha='center', va='center', transform=ax.transAxes)
-            ax.set_title('Статусы обращений')
+            ax.text(0.5, 0.5, 'Нет данных', ha='center', va='center', transform=ax.transAxes, fontsize=16)
+            ax.set_title('Статусы обращений', fontsize=18, fontweight='bold', pad=20)
+            ax.set_xticks([])
+            ax.set_yticks([])
             return fig
         
         statuses = list(status_counts.keys())
         counts = list(status_counts.values())
         
-        # Цвета для разных статусов
+        # Яркая цветовая палитра для статусов
         status_colors = {
-            'new': '#36A2EB',
-            'answered': '#4BC0C0',
-            'in_progress': '#FFCE56',
-            'requires_manual_review': '#FF6384',
-            'closed': '#9966FF'
+            'новое': '#FF6B6B',        # Ярко-красный
+            'отвечено': '#4ECDC4',      # Бирюзовый
+            'в работе': '#45B7D1',      # Голубой
+            'требует проверки': '#FFA07A',  # Светло-коралловый
+            'закрыто': '#98D8C8',       # Мятный
+            'не определен': '#F7DC6F'   # Желтый
         }
         
-        colors = [status_colors.get(status, '#C9CBCF') for status in statuses]
+        # Создаем цвета для каждого статуса
+        colors = [status_colors.get(status, '#BB8FCE') for status in statuses]
         
-        # Создаем диаграмму
-        fig, ax = plt.subplots(figsize=(12, 6))
-        bars = ax.bar(statuses, counts, color=colors, edgecolor='black', alpha=0.8)
+        # Создаем диаграмму с улучшенным дизайном
+        plt.style.use('seaborn-v0_8-darkgrid')
+        fig, ax = plt.subplots(figsize=(14, 8))
         
-        # Добавляем значения на столбцы
+        # Создаем столбцы с градиентом и тенью
+        bars = ax.bar(statuses, counts, color=colors, edgecolor='white', linewidth=2, 
+                    alpha=0.85, zorder=3)
+        
+        # Добавляем градиент к столбцам
+        for bar, color in zip(bars, colors):
+            bar.set_color(color)
+            # Добавляем легкий градиент
+            gradient = np.linspace(0.85, 1.0, 100).reshape(1, -1)
+            gradient = np.vstack((gradient, gradient))
+            bar.set_zorder(4)
+        
+        # Добавляем значения на столбцы с улучшенным стилем
         for bar, count in zip(bars, counts):
             height = bar.get_height()
             ax.text(bar.get_x() + bar.get_width()/2., height + 0.1,
-                   f'{count}', ha='center', va='bottom', fontweight='bold')
+                f'{count}', ha='center', va='bottom', 
+                fontweight='bold', fontsize=14, color='#2C3E50',
+                bbox=dict(boxstyle="round,pad=0.3", facecolor='white', alpha=0.8, edgecolor='none'))
         
-        ax.set_ylabel('Количество обращений', fontsize=12)
-        ax.set_xlabel('Статусы', fontsize=12)
-        ax.set_title('Распределение обращений по статусам', fontsize=16, fontweight='bold')
+        # Настраиваем оси и заголовок
+        ax.set_ylabel('Количество обращений', fontsize=14, fontweight='bold', color='#2C3E50')
+        ax.set_xlabel('Статусы обращений', fontsize=14, fontweight='bold', color='#2C3E50')
+        ax.set_title('Распределение обращений по статусам', 
+                    fontsize=18, fontweight='bold', pad=25, color='#2C3E50')
         
         # Улучшаем отображение подписей
-        plt.xticks(rotation=45, ha='right')
+        plt.xticks(rotation=15, ha='right', fontsize=12, fontweight='bold')
+        plt.yticks(fontsize=12)
+        
+        # Добавляем сетку
+        ax.grid(True, axis='y', alpha=0.3, zorder=0)
+        ax.grid(True, axis='x', alpha=0.1, zorder=0)
+        ax.set_axisbelow(True)
+        
+        # Устанавливаем цвет фона
+        ax.set_facecolor('#F8F9F9')
+        fig.patch.set_facecolor('#FFFFFF')
+        
+        # Добавляем легкую тень вокруг диаграммы
+        for spine in ax.spines.values():
+            spine.set_color('#BDC3C7')
+            spine.set_linewidth(1.5)
+        
+        # Настраиваем пределы осей для лучшего отображения
+        ax.set_ylim(0, max(counts) * 1.15)
+        
+        # Добавляем легкий градиентный фон
+        ax.imshow([[0, 0], [1, 1]], cmap=plt.cm.Blues, extent=ax.get_xlim() + ax.get_ylim(), 
+                alpha=0.02, aspect='auto', zorder=1)
+        
         plt.tight_layout()
         
         return fig
@@ -820,13 +863,14 @@ class AnalystBot:
     def _get_status_emoji(self, status):
         """Получить emoji для статуса"""
         status_emojis = {
-            'new': '🆕',
-            'answered': '✅',
-            'in_progress': '🔄',
-            'requires_manual_review': '👨‍💼',
-            'closed': '🔒'
+            'новое': '🆕',
+            'отвечено': '✅',
+            'в работе': '🔄',
+            'требует проверки': '👨‍💼',
+            'закрыто': '🔒'
         }
         return status_emojis.get(status, '📄')
+
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка текстовых сообщений"""

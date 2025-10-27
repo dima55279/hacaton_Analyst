@@ -351,7 +351,8 @@ class CitizenBot:
             
             response = "📋 Ваши последние обращения:\n\n"
             for i, appeal in enumerate(appeals, 1):
-                status_emoji = "✅" if appeal['status'] == 'answered' else "⏳" if appeal['status'] == 'in_progress' else "📝"
+                # Используем русские статусы с эмодзи
+                status_emoji = "🆕" if appeal['status'] == 'новое' else "✅" if appeal['status'] == 'отвечено' else "🔄" if appeal['status'] == 'в работе' else "👨‍💼" if appeal['status'] == 'требует проверки' else "📝"
                 address = appeal.get('full_address', 'адрес не указан')
                 response += f"{i}. {status_emoji} {appeal['text'][:50]}...\n"
                 response += f"   📍 Адрес: {address}\n"

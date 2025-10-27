@@ -316,8 +316,13 @@ class AppealsAnalyzer:
                 final_response += contacts_block
                 
                 logger.info(f"✅ Телефон {phone} гарантированно добавлен в ответ")
+                
+                # Обновляем статус на "отвечено"
+                self.db.update_appeal(appeal_id, {'status': 'отвечено'})
             else:
                 final_response += "\n\nПо вопросам уточнения обращайтесь в соответствующий муниципальный орган вашего района."
+                # Для обращений без муниципалитета ставим статус "требует проверки"
+                self.db.update_appeal(appeal_id, {'status': 'требует проверки'})
             
             logger.info(f"📝 Сгенерирован ответ для обращения {appeal_id}")
             return final_response
@@ -332,10 +337,10 @@ class AppealsAnalyzer:
             
             return base_response
 
-    # Остальные методы остаются без изменений...
     def analyze_trends(self, period_days=30):
-        """Анализ трендов и повторяющихся проблем с актуальными данными"""
+        """Анализ трендов и повторяющихся проблем с актуальными данными и русскими статусами"""
         try:
+            # Получаем обращения напрямую из базы для расчета статистики
             appeals = self.db.get_appeals({
                 'date_from': datetime.now() - timedelta(days=period_days)
             }, limit=1000)
@@ -349,15 +354,27 @@ class AppealsAnalyzer:
                     'type_distribution': {},
                     'common_themes': [],
                     'response_rate': 0,
+                    'status_distribution': {},
                     'last_updated': datetime.now().isoformat()
                 }
             
+            # Извлекаем темы из текстов обращений
             themes = self._extract_themes([a['text'] for a in appeals])
             
+            # Статистика по типам
             type_stats = {}
             for appeal in appeals:
                 appeal_type = appeal['type'] or 'другое'
                 type_stats[appeal_type] = type_stats.get(appeal_type, 0) + 1
+            
+            # Статистика по статусам
+            status_stats = {}
+            for appeal in appeals:
+                status = appeal['status'] or 'не определен'
+                status_stats[status] = status_stats.get(status, 0) + 1
+            
+            # Расчет процента ответов
+            response_rate = self._calculate_response_rate(appeals)
             
             if not isinstance(themes, list):
                 themes = []
@@ -366,12 +383,13 @@ class AppealsAnalyzer:
                 'period_days': period_days,
                 'total_appeals': len(appeals),
                 'type_distribution': type_stats,
+                'status_distribution': status_stats,
                 'common_themes': themes[:10],
-                'response_rate': self._calculate_response_rate(appeals),
+                'response_rate': response_rate,
                 'last_updated': datetime.now().isoformat()
             }
             
-            logger.info(f"📊 Проанализированы актуальные тренды за {period_days} дней")
+            logger.info(f"📊 Проанализированы актуальные тренды за {period_days} дней, процент ответов: {response_rate}%")
             return trends
             
         except Exception as e:
@@ -462,11 +480,12 @@ class AppealsAnalyzer:
         return themes[:10]
 
     def _calculate_response_rate(self, appeals):
-        """Расчет процента отвеченных обращений"""
+        """Расчет процента отвеченных обращений с русскими статусами"""
         if not appeals:
             return 0
             
-        answered = sum(1 for a in appeals if a.get('status') == 'answered')
+        # Используем русские статусы
+        answered = sum(1 for a in appeals if a.get('status') == 'отвечено')
         total = len(appeals)
         return round((answered / total * 100), 2) if total > 0 else 0
 
