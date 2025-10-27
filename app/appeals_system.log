@@ -9172,3 +9172,313 @@ AttributeError: 'NoneType' object has no attribute 'from_user'
 2025-10-25 23:41:56,250 - telegram.ext.Application - INFO - Application is stopping. This might take a moment.
 2025-10-25 23:41:56,252 - telegram.ext.Application - INFO - Application.stop() complete
 2025-10-25 23:41:56,664 - database.database_manager - INFO - 🔌 Соединение с MySQL закрыто
+2025-10-25 23:43:05,237 - database.database_manager - INFO - ✅ Успешное подключение к MySQL
+2025-10-25 23:43:05,295 - database.database_manager - INFO - ✅ Таблицы созданы успешно
+2025-10-25 23:43:05,295 - processing.data_parser - INFO - 🚀 Запуск парсера таблицы населенных пунктов Тамбовской области...
+2025-10-25 23:43:05,324 - processing.data_parser - INFO - ✅ Таблица settlements создана успешно с колонками: id, name, type, population, district
+2025-10-25 23:43:05,324 - processing.data_parser - INFO - 🔍 Загрузка страницы: https://geoadm.com/naselennye-punkty-tambovskoy-oblasti.html
+2025-10-25 23:43:09,040 - processing.data_parser - INFO - ✅ Найден целевой заголовок таблицы
+2025-10-25 23:43:09,040 - processing.data_parser - INFO - ✅ Найдена таблица методом find_next_sibling
+2025-10-25 23:43:09,041 - processing.data_parser - INFO - ✅ Таблица найдена, начинаем парсинг...
+2025-10-25 23:43:09,065 - processing.data_parser - INFO - 📋 Найдено строк в таблице: 1600
+2025-10-25 23:43:09,066 - processing.data_parser - INFO - 📝 Заголовки таблицы: ['', 'Название', 'Тип', 'Население', 'Округ/район']
+2025-10-25 23:43:09,067 - processing.data_parser - INFO - 🔍 Определены индексы колонок: название=1, тип=2, население=3, район=4
+2025-10-25 23:43:09,068 - processing.data_parser - INFO - 📝 Пример данных: {'name': 'Тамбов', 'type': 'город', 'population': 292140, 'district': 'Городской округ город Тамбов'}
+2025-10-25 23:43:09,069 - processing.data_parser - INFO - 📝 Пример данных: {'name': 'Мичуринск', 'type': 'город', 'population': 90722, 'district': 'Городской округ город Мичуринск'}
+2025-10-25 23:43:09,070 - processing.data_parser - INFO - 📝 Пример данных: {'name': 'Рассказово', 'type': 'город', 'population': 42679, 'district': 'Городской округ город Рассказово'}
+2025-10-25 23:43:09,070 - processing.data_parser - INFO - 📝 Пример данных: {'name': 'Моршанск', 'type': 'город', 'population': 37955, 'district': 'Городской округ город Моршанск'}
+2025-10-25 23:43:09,071 - processing.data_parser - INFO - 📝 Пример данных: {'name': 'Котовск', 'type': 'город', 'population': 28955, 'district': 'Городской округ город Котовск'}
+2025-10-25 23:43:09,321 - processing.data_parser - INFO - 🎯 Всего найдено населенных пунктов: 1599
+2025-10-25 23:43:10,706 - processing.data_parser - INFO - 💾 Успешно сохранено 1599 населенных пунктов
+2025-10-25 23:43:10,707 - processing.data_parser - INFO - 📊 Статистика сохраненных данных:
+2025-10-25 23:43:10,707 - processing.data_parser - INFO -    Всего записей: 1599
+2025-10-25 23:43:10,708 - processing.data_parser - INFO -    С указанием населения: 1521 (95.1%)
+2025-10-25 23:43:10,709 - processing.data_parser - INFO -    С указанием района: 1599 (100.0%)
+2025-10-25 23:43:10,709 - processing.data_parser - INFO - 🔍 Примеры сохраненных записей:
+2025-10-25 23:43:10,709 - processing.data_parser - INFO -    1. город Тамбов, население: 292140, район: Городской округ город Тамбов
+2025-10-25 23:43:10,709 - processing.data_parser - INFO -    2. город Мичуринск, население: 90722, район: Городской округ город Мичуринск
+2025-10-25 23:43:10,710 - processing.data_parser - INFO -    3. город Рассказово, население: 42679, район: Городской округ город Рассказово
+2025-10-25 23:43:10,710 - processing.data_parser - INFO -    4. город Моршанск, население: 37955, район: Городской округ город Моршанск
+2025-10-25 23:43:10,710 - processing.data_parser - INFO -    5. город Котовск, население: 28955, район: Городской округ город Котовск
+2025-10-25 23:43:10,711 - processing.data_parser - INFO - ✅ Данные успешно загружены: 1599 записей
+2025-10-25 23:43:10,711 - __main__ - INFO - ✅ База данных населенных пунктов инициализирована
+2025-10-25 23:43:10,711 - __main__ - INFO - ✅ Система обработки обращений инициализирована
+2025-10-25 23:43:10,739 - __main__ - INFO - ✅ Все компоненты системы запущены
+2025-10-25 23:43:12,119 - gigachat.api_client - INFO - ✅ GigaChatClient инициализирован
+2025-10-25 23:43:12,122 - gigachat.api_client - INFO - ✅ GigaChatClient инициализирован
+2025-10-25 23:43:12,124 - gigachat.api_client - INFO - ✅ GigaChatClient инициализирован
+2025-10-25 23:43:12,185 - database.database_manager - INFO - ✅ Успешное подключение к MySQL
+2025-10-25 23:43:12,187 - database.database_manager - INFO - ✅ Успешное подключение к MySQL
+2025-10-25 23:43:12,188 - database.database_manager - INFO - ✅ Успешное подключение к MySQL
+2025-10-25 23:43:12,297 - database.database_manager - INFO - ✅ Таблицы созданы успешно
+2025-10-25 23:43:12,298 - processing.analyzer - INFO - ✅ Загружены данные по 30 муниципальным образованиям из settlements.data.json
+2025-10-25 23:43:12,304 - __mp_main__ - INFO - 🚀 Запуск веб-интерфейса на порту 5000...
+2025-10-25 23:43:12,311 - database.database_manager - INFO - ✅ Таблицы созданы успешно
+2025-10-25 23:43:12,312 - processing.analyzer - INFO - ✅ Загружены данные по 30 муниципальным образованиям из settlements.data.json
+2025-10-25 23:43:12,312 - __mp_main__ - INFO - 🚀 Запуск бота для аналитиков...
+2025-10-25 23:43:12,323 - database.database_manager - INFO - ✅ Таблицы созданы успешно
+2025-10-25 23:43:12,324 - processing.analyzer - INFO - ✅ Загружены данные по 30 муниципальным образованиям из settlements.data.json
+2025-10-25 23:43:12,325 - __mp_main__ - INFO - 🚀 Запуск бота для граждан...
+2025-10-25 23:43:12,327 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.165:5000
+2025-10-25 23:43:12,328 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-25 23:43:12,361 - bot.analyst_bot - INFO - 🤖 Бот для аналитиков запущен...
+2025-10-25 23:43:12,371 - bot.citizen_bot - INFO - 🤖 Бот для граждан запущен...
+2025-10-25 23:43:12,542 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getMe "HTTP/1.1 200 OK"
+2025-10-25 23:43:12,553 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getMe "HTTP/1.1 200 OK"
+2025-10-25 23:43:12,599 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/deleteWebhook "HTTP/1.1 200 OK"
+2025-10-25 23:43:12,601 - telegram.ext.Application - INFO - Application started
+2025-10-25 23:43:12,613 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/deleteWebhook "HTTP/1.1 200 OK"
+2025-10-25 23:43:12,615 - telegram.ext.Application - INFO - Application started
+2025-10-25 23:43:13,844 - web.dashboard - INFO - 🌐 Запрос главной страницы дашборда
+2025-10-25 23:43:13,858 - werkzeug - INFO - 127.0.0.1 - - [25/Oct/2025 23:43:13] "GET / HTTP/1.1" 200 -
+2025-10-25 23:43:14,083 - web.dashboard - INFO - 📊 Запрос статистики за 30 дней
+2025-10-25 23:43:14,086 - web.dashboard - INFO - 📊 Возвращаем статистику: 5 записей
+2025-10-25 23:43:14,087 - werkzeug - INFO - 127.0.0.1 - - [25/Oct/2025 23:43:14] "GET /api/stats?period=30 HTTP/1.1" 200 -
+2025-10-25 23:43:14,348 - web.dashboard - INFO - 📈 Запрос трендов за 30 дней
+2025-10-25 23:43:14,351 - processing.analyzer - INFO - 📈 Анализ трендов: получено 23 обращений за 30 дней
+2025-10-25 23:43:14,352 - gigachat.api_client - INFO - 🔐 Попытка аутентификации 1/3...
+2025-10-25 23:43:14,457 - gigachat.api_client - INFO - 📊 Статус ответа аутентификации: 200
+2025-10-25 23:43:14,457 - gigachat.api_client - INFO - ✅ Успешная аутентификация в GigaChat
+2025-10-25 23:43:14,457 - gigachat.api_client - INFO - 💬 Попытка чат-запроса 1/3
+2025-10-25 23:43:15,525 - gigachat.api_client - INFO - 📊 Статус ответа чата: 200
+2025-10-25 23:43:15,526 - gigachat.api_client - INFO - ✅ Успешно получен ответ от GigaChat
+2025-10-25 23:43:15,528 - processing.analyzer - INFO - ✅ Успешно извлечены темы: 10
+2025-10-25 23:43:15,529 - processing.analyzer - INFO - 📊 Проанализированы актуальные тренды за 30 дней
+2025-10-25 23:43:15,529 - web.dashboard - INFO - 📈 Возвращаем тренды: 23 обращений
+2025-10-25 23:43:15,530 - werkzeug - INFO - 127.0.0.1 - - [25/Oct/2025 23:43:15] "GET /api/trends?period=30 HTTP/1.1" 200 -
+2025-10-25 23:43:15,538 - web.dashboard - INFO - 📝 Запрос обращений (страница 1, лимит 10)
+2025-10-25 23:43:15,542 - web.dashboard - INFO - 📝 Возвращаем обращения: 10 записей
+2025-10-25 23:43:15,543 - werkzeug - INFO - 127.0.0.1 - - [25/Oct/2025 23:43:15] "GET /api/appeals?limit=10 HTTP/1.1" 200 -
+2025-10-25 23:43:22,772 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-25 23:43:22,777 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-25 23:43:32,824 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-25 23:43:32,843 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-25 23:43:40,353 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-25 23:43:40,355 - telegram.ext.Application - INFO - Application is stopping. This might take a moment.
+2025-10-25 23:43:40,356 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-25 23:43:40,356 - telegram.ext.Application - INFO - Application.stop() complete
+2025-10-25 23:43:40,357 - telegram.ext.Application - INFO - Application is stopping. This might take a moment.
+2025-10-25 23:43:40,358 - telegram.ext.Application - INFO - Application.stop() complete
+2025-10-25 23:43:40,521 - database.database_manager - INFO - 🔌 Соединение с MySQL закрыто
+2025-10-27 15:49:06,515 - database.database_manager - INFO - ✅ Успешное подключение к MySQL
+2025-10-27 15:49:06,739 - database.database_manager - INFO - ✅ Таблицы созданы успешно
+2025-10-27 15:49:06,740 - processing.data_parser - INFO - 🚀 Запуск парсера таблицы населенных пунктов Тамбовской области...
+2025-10-27 15:49:06,792 - processing.data_parser - INFO - ✅ Таблица settlements создана успешно с колонками: id, name, type, population, district
+2025-10-27 15:49:06,793 - processing.data_parser - INFO - 🔍 Загрузка страницы: https://geoadm.com/naselennye-punkty-tambovskoy-oblasti.html
+2025-10-27 15:49:10,647 - processing.data_parser - INFO - ✅ Найден целевой заголовок таблицы
+2025-10-27 15:49:10,648 - processing.data_parser - INFO - ✅ Найдена таблица методом find_next_sibling
+2025-10-27 15:49:10,648 - processing.data_parser - INFO - ✅ Таблица найдена, начинаем парсинг...
+2025-10-27 15:49:10,675 - processing.data_parser - INFO - 📋 Найдено строк в таблице: 1600
+2025-10-27 15:49:10,677 - processing.data_parser - INFO - 📝 Заголовки таблицы: ['', 'Название', 'Тип', 'Население', 'Округ/район']
+2025-10-27 15:49:10,677 - processing.data_parser - INFO - 🔍 Определены индексы колонок: название=1, тип=2, население=3, район=4
+2025-10-27 15:49:10,678 - processing.data_parser - INFO - 📝 Пример данных: {'name': 'Тамбов', 'type': 'город', 'population': 292140, 'district': 'Городской округ город Тамбов'}
+2025-10-27 15:49:10,679 - processing.data_parser - INFO - 📝 Пример данных: {'name': 'Мичуринск', 'type': 'город', 'population': 90722, 'district': 'Городской округ город Мичуринск'}
+2025-10-27 15:49:10,682 - processing.data_parser - INFO - 📝 Пример данных: {'name': 'Рассказово', 'type': 'город', 'population': 42679, 'district': 'Городской округ город Рассказово'}
+2025-10-27 15:49:10,683 - processing.data_parser - INFO - 📝 Пример данных: {'name': 'Моршанск', 'type': 'город', 'population': 37955, 'district': 'Городской округ город Моршанск'}
+2025-10-27 15:49:10,684 - processing.data_parser - INFO - 📝 Пример данных: {'name': 'Котовск', 'type': 'город', 'population': 28955, 'district': 'Городской округ город Котовск'}
+2025-10-27 15:49:10,944 - processing.data_parser - INFO - 🎯 Всего найдено населенных пунктов: 1599
+2025-10-27 15:49:12,459 - processing.data_parser - INFO - 💾 Успешно сохранено 1599 населенных пунктов
+2025-10-27 15:49:12,461 - processing.data_parser - INFO - 📊 Статистика сохраненных данных:
+2025-10-27 15:49:12,461 - processing.data_parser - INFO -    Всего записей: 1599
+2025-10-27 15:49:12,461 - processing.data_parser - INFO -    С указанием населения: 1521 (95.1%)
+2025-10-27 15:49:12,462 - processing.data_parser - INFO -    С указанием района: 1599 (100.0%)
+2025-10-27 15:49:12,462 - processing.data_parser - INFO - 🔍 Примеры сохраненных записей:
+2025-10-27 15:49:12,462 - processing.data_parser - INFO -    1. город Тамбов, население: 292140, район: Городской округ город Тамбов
+2025-10-27 15:49:12,463 - processing.data_parser - INFO -    2. город Мичуринск, население: 90722, район: Городской округ город Мичуринск
+2025-10-27 15:49:12,463 - processing.data_parser - INFO -    3. город Рассказово, население: 42679, район: Городской округ город Рассказово
+2025-10-27 15:49:12,464 - processing.data_parser - INFO -    4. город Моршанск, население: 37955, район: Городской округ город Моршанск
+2025-10-27 15:49:12,464 - processing.data_parser - INFO -    5. город Котовск, население: 28955, район: Городской округ город Котовск
+2025-10-27 15:49:12,465 - processing.data_parser - INFO - ✅ Данные успешно загружены: 1599 записей
+2025-10-27 15:49:12,466 - __main__ - INFO - ✅ База данных населенных пунктов инициализирована
+2025-10-27 15:49:12,466 - __main__ - INFO - ✅ Система обработки обращений инициализирована
+2025-10-27 15:49:12,578 - __main__ - INFO - ✅ Все компоненты системы запущены
+2025-10-27 15:49:16,952 - gigachat.api_client - INFO - ✅ GigaChatClient инициализирован
+2025-10-27 15:49:16,956 - gigachat.api_client - INFO - ✅ GigaChatClient инициализирован
+2025-10-27 15:49:17,018 - database.database_manager - INFO - ✅ Успешное подключение к MySQL
+2025-10-27 15:49:17,022 - database.database_manager - INFO - ✅ Успешное подключение к MySQL
+2025-10-27 15:49:17,023 - database.database_manager - INFO - ✅ Успешное подключение к MySQL
+2025-10-27 15:49:17,252 - database.database_manager - INFO - ✅ Таблицы созданы успешно
+2025-10-27 15:49:17,281 - processing.analyzer - INFO - ✅ Загружены данные по 30 муниципальным образованиям из settlements.data.json
+2025-10-27 15:49:17,282 - database.database_manager - INFO - ✅ Таблицы созданы успешно
+2025-10-27 15:49:17,283 - processing.analyzer - INFO - ✅ Загружены данные по 30 муниципальным образованиям из settlements.data.json
+2025-10-27 15:49:17,283 - __mp_main__ - INFO - 🚀 Запуск бота для граждан...
+2025-10-27 15:49:17,303 - database.database_manager - INFO - ✅ Таблицы созданы успешно
+2025-10-27 15:49:17,304 - processing.analyzer - INFO - ✅ Загружены данные по 30 муниципальным образованиям из settlements.data.json
+2025-10-27 15:49:17,311 - __mp_main__ - INFO - 🚀 Запуск веб-интерфейса на порту 5000...
+2025-10-27 15:49:17,333 - bot.analyst_bot - INFO - 🤖 Бот для аналитиков запущен...
+2025-10-27 15:49:17,334 - bot.citizen_bot - INFO - 🤖 Бот для граждан запущен...
+2025-10-27 15:49:17,498 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.165:5000
+2025-10-27 15:49:17,499 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-27 15:49:17,591 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getMe "HTTP/1.1 200 OK"
+2025-10-27 15:49:17,599 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getMe "HTTP/1.1 200 OK"
+2025-10-27 15:49:17,656 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/deleteWebhook "HTTP/1.1 200 OK"
+2025-10-27 15:49:17,658 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/deleteWebhook "HTTP/1.1 200 OK"
+2025-10-27 15:49:17,658 - telegram.ext.Application - INFO - Application started
+2025-10-27 15:49:17,660 - telegram.ext.Application - INFO - Application started
+2025-10-27 15:49:17,817 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:49:17,931 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:49:27,825 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:49:27,876 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:49:37,886 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:49:37,932 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:49:47,942 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:49:47,987 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:49:58,002 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:49:58,043 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:50:08,065 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:50:08,099 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:50:18,122 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:50:18,153 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:50:28,178 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:50:28,208 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:50:37,711 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:50:37,925 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:50:38,236 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:50:43,759 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:50:44,282 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:50:45,506 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:50:45,587 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:50:48,297 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:50:49,761 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:50:49,847 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:50:51,262 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:50:51,351 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:50:58,355 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:50:59,114 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:50:59,117 - bot.citizen_bot - INFO - Обращение от Дмитрий с адресом Алексеевка, Советская, 10: Когда дадут свет?
+2025-10-27 15:50:59,314 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/sendChatAction "HTTP/1.1 200 OK"
+2025-10-27 15:50:59,315 - gigachat.api_client - INFO - 🔐 Попытка аутентификации 1/3...
+2025-10-27 15:50:59,680 - gigachat.api_client - ERROR - 🔌 Ошибка соединения при аутентификации (попытка 1): ('Connection aborted.', ConnectionResetError(10054, 'Удаленный хост принудительно разорвал существующее подключение', None, 10054, None))
+2025-10-27 15:51:00,687 - gigachat.api_client - INFO - 🔐 Попытка аутентификации 2/3...
+2025-10-27 15:51:00,778 - gigachat.api_client - INFO - 📊 Статус ответа аутентификации: 200
+2025-10-27 15:51:00,779 - gigachat.api_client - INFO - ✅ Успешная аутентификация в GigaChat
+2025-10-27 15:51:00,781 - gigachat.api_client - INFO - 💬 Попытка чат-запроса 1/3
+2025-10-27 15:51:01,068 - gigachat.api_client - INFO - 📊 Статус ответа чата: 200
+2025-10-27 15:51:01,069 - gigachat.api_client - INFO - ✅ Успешно получен ответ от GigaChat
+2025-10-27 15:51:01,071 - processing.analyzer - INFO - 🎯 Классифицировано как: запрос информации
+2025-10-27 15:51:01,179 - database.database_manager - INFO - 💾 Сохранено обращение ID: 24
+2025-10-27 15:51:01,180 - processing.analyzer - INFO - 🔍 Поиск муниципалитета для: Алексеевка, район: Жердевский район
+2025-10-27 15:51:01,180 - processing.analyzer - INFO - ✅ Найден муниципалитет по району: Жердевский район
+2025-10-27 15:51:01,180 - processing.analyzer - INFO - 📍 Найдены контакты муниципалитета для Алексеевка
+2025-10-27 15:51:01,181 - gigachat.api_client - INFO - 💬 Попытка чат-запроса 1/3
+2025-10-27 15:51:01,667 - gigachat.api_client - INFO - 📊 Статус ответа чата: 200
+2025-10-27 15:51:01,668 - gigachat.api_client - INFO - ✅ Успешно получен ответ от GigaChat
+2025-10-27 15:51:01,672 - processing.analyzer - INFO - ✅ Телефон 8 (47535) 5-17-83 гарантированно добавлен в ответ
+2025-10-27 15:51:01,672 - processing.analyzer - INFO - 📝 Сгенерирован ответ для обращения 24
+2025-10-27 15:51:01,719 - database.database_manager - INFO - ✏️ Обновлено обращение ID: 24
+2025-10-27 15:51:01,814 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:51:01,818 - bot.citizen_bot - INFO - Ответ отправлен пользователю Дмитрий
+2025-10-27 15:51:08,266 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:51:08,410 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:51:08,578 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:51:18,388 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:51:18,466 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:51:28,443 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:51:28,542 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:51:28,905 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:51:29,114 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:51:31,419 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:51:31,513 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:51:32,004 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-10-27 15:51:32,006 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-10-27 15:51:32,007 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-10-27 15:51:32,614 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/sendPhoto "HTTP/1.1 200 OK"
+2025-10-27 15:51:33,153 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/sendPhoto "HTTP/1.1 200 OK"
+2025-10-27 15:51:33,775 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/sendPhoto "HTTP/1.1 200 OK"
+2025-10-27 15:51:38,499 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:51:41,477 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:51:48,553 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:51:51,535 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:51:52,624 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:51:52,628 - database.database_manager - INFO - 📝 Получено 5 последних обращений
+2025-10-27 15:51:52,874 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:51:58,059 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:51:58,065 - processing.analyzer - INFO - 📈 Анализ трендов: получено 24 обращений за 30 дней
+2025-10-27 15:51:58,065 - gigachat.api_client - INFO - 🔐 Попытка аутентификации 1/3...
+2025-10-27 15:51:58,186 - gigachat.api_client - INFO - 📊 Статус ответа аутентификации: 200
+2025-10-27 15:51:58,186 - gigachat.api_client - INFO - ✅ Успешная аутентификация в GigaChat
+2025-10-27 15:51:58,188 - gigachat.api_client - INFO - 💬 Попытка чат-запроса 1/3
+2025-10-27 15:51:58,606 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:51:59,272 - gigachat.api_client - INFO - 📊 Статус ответа чата: 200
+2025-10-27 15:51:59,272 - gigachat.api_client - INFO - ✅ Успешно получен ответ от GigaChat
+2025-10-27 15:51:59,274 - processing.analyzer - INFO - ✅ Успешно извлечены темы: 10
+2025-10-27 15:51:59,275 - processing.analyzer - INFO - 📊 Проанализированы актуальные тренды за 30 дней
+2025-10-27 15:51:59,510 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:52:08,662 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:52:09,337 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:52:18,717 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:52:19,392 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:52:28,771 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:52:29,503 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:52:38,827 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:52:39,575 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:52:48,884 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:52:49,636 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:52:58,943 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:52:59,698 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:53:03,443 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:53:03,781 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:53:09,665 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:53:09,757 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:53:09,930 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:53:17,095 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:53:17,327 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:53:18,690 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:53:18,846 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:53:19,812 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:53:28,748 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:53:29,886 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:53:32,471 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:53:32,473 - bot.citizen_bot - INFO - Обращение от Дмитрий с адресом Красненькая, Октябрьская, 6: Подведите интернет в деревню
+2025-10-27 15:53:32,644 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/sendChatAction "HTTP/1.1 200 OK"
+2025-10-27 15:53:32,646 - gigachat.api_client - INFO - 💬 Попытка чат-запроса 1/3
+2025-10-27 15:53:32,827 - gigachat.api_client - INFO - 📊 Статус ответа чата: 200
+2025-10-27 15:53:32,827 - gigachat.api_client - INFO - ✅ Успешно получен ответ от GigaChat
+2025-10-27 15:53:32,829 - processing.analyzer - INFO - 🎯 Классифицировано как: другое
+2025-10-27 15:53:32,886 - database.database_manager - INFO - 💾 Сохранено обращение ID: 25
+2025-10-27 15:53:32,887 - processing.analyzer - INFO - 🔍 Поиск муниципалитета для: Красненькая, район: Тамбовский район
+2025-10-27 15:53:32,888 - processing.analyzer - INFO - ✅ Найден муниципалитет по району: Тамбовский район
+2025-10-27 15:53:32,888 - processing.analyzer - INFO - 📍 Найдены контакты муниципалитета для Красненькая
+2025-10-27 15:53:32,888 - gigachat.api_client - INFO - 💬 Попытка чат-запроса 1/3
+2025-10-27 15:53:33,471 - gigachat.api_client - INFO - 📊 Статус ответа чата: 200
+2025-10-27 15:53:33,472 - gigachat.api_client - INFO - ✅ Успешно получен ответ от GigaChat
+2025-10-27 15:53:33,474 - processing.analyzer - INFO - ✅ Телефон 8 (4752) 44-25-72 гарантированно добавлен в ответ
+2025-10-27 15:53:33,474 - processing.analyzer - INFO - 📝 Сгенерирован ответ для обращения 25
+2025-10-27 15:53:33,550 - database.database_manager - INFO - ✏️ Обновлено обращение ID: 25
+2025-10-27 15:53:33,645 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:53:33,647 - bot.citizen_bot - INFO - Ответ отправлен пользователю Дмитрий
+2025-10-27 15:53:39,947 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:53:42,529 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:53:45,342 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:53:45,542 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:53:50,004 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:53:50,787 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:53:50,983 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/sendMessage "HTTP/1.1 200 OK"
+2025-10-27 15:53:51,146 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-10-27 15:53:51,147 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-10-27 15:53:51,148 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-10-27 15:53:51,571 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/sendPhoto "HTTP/1.1 200 OK"
+2025-10-27 15:53:51,930 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/sendPhoto "HTTP/1.1 200 OK"
+2025-10-27 15:53:52,345 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/sendPhoto "HTTP/1.1 200 OK"
+2025-10-27 15:53:55,417 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:54:00,845 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:54:05,471 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:54:10,904 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:54:15,531 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:54:20,963 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:54:25,613 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:54:31,019 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:54:35,666 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:54:38,961 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:54:38,962 - telegram.ext.Application - INFO - Application is stopping. This might take a moment.
+2025-10-27 15:54:38,963 - telegram.ext.Application - INFO - Application.stop() complete
+2025-10-27 15:54:38,974 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 15:54:38,976 - telegram.ext.Application - INFO - Application is stopping. This might take a moment.
+2025-10-27 15:54:38,977 - telegram.ext.Application - INFO - Application.stop() complete
+2025-10-27 15:54:39,438 - database.database_manager - INFO - 🔌 Соединение с MySQL закрыто

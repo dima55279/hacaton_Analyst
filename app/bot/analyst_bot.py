@@ -3,6 +3,13 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 import logging
 import asyncio
 from datetime import datetime
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')  # Для работы без GUI
+import io
+import numpy as np
+import seaborn as sns
+from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +28,7 @@ class AnalystBot:
 /stats - Актуальная статистика
 /trends - Анализ трендов
 /appeals - Последние обращения
+/charts - Графики и диаграммы
 /refresh - Обновить данные
 /help - Справка
 
@@ -28,11 +36,221 @@ class AnalystBot:
 """
         keyboard = [
             ['📈 Статистика', '📊 Тренды'],
-            ['📝 Обращения', '🔄 Обновить']
+            ['📝 Обращения', '📊 Графики'],
+            ['🔄 Обновить', 'ℹ️ Помощь']
         ]
         reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
         
         await update.message.reply_text(welcome_text, reply_markup=reply_markup)
+
+    async def show_charts(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Показать графики аналогичные веб-интерфейсу"""
+        try:
+            await update.message.reply_text("📊 Генерирую графики...")
+            
+            # Получаем данные за последние 30 дней
+            stats = self.system.database.get_appeals_stats(30)
+            
+            if not stats:
+                await update.message.reply_text("❌ Недостаточно данных для построения графиков.")
+                return
+
+            # Создаем графики
+            charts = await self._generate_charts(stats)
+            
+            # Отправляем графики
+            for chart_data in charts:
+                photo_buffer = io.BytesIO()
+                chart_data['figure'].savefig(photo_buffer, format='PNG', dpi=100, bbox_inches='tight')
+                photo_buffer.seek(0)
+                
+                await update.message.reply_photo(
+                    photo=photo_buffer,
+                    caption=chart_data['caption']
+                )
+                
+                # Закрываем figure для освобождения памяти
+                plt.close(chart_data['figure'])
+                
+        except Exception as e:
+            logger.error(f"❌ Ошибка генерации графиков: {e}")
+            await update.message.reply_text("❌ Ошибка при генерации графиков.")
+
+    async def _generate_charts(self, stats):
+        """Генерация графиков на основе статистики"""
+        charts = []
+        
+        try:
+            # 1. Круговая диаграмма распределения по типам
+            type_chart = self._create_type_pie_chart(stats)
+            charts.append({
+                'figure': type_chart,
+                'caption': "📊 Распределение обращений по типам (за 30 дней)"
+            })
+            
+            # 2. Столбчатая диаграмма распределения по статусам
+            status_chart = self._create_status_bar_chart(stats)
+            charts.append({
+                'figure': status_chart,
+                'caption': "📈 Распределение обращений по статусам (за 30 дней)"
+            })
+            
+            # 3. График динамики обращений по дням
+            timeline_chart = self._create_timeline_chart(stats)
+            if timeline_chart:
+                charts.append({
+                    'figure': timeline_chart,
+                    'caption': "📅 Динамика обращений по дням (за 30 дней)"
+                })
+            
+        except Exception as e:
+            logger.error(f"❌ Ошибка создания графиков: {e}")
+            
+        return charts
+
+    def _create_type_pie_chart(self, stats):
+        """Создание круговой диаграммы по типам обращений"""
+        # Агрегируем данные по типам
+        type_counts = {}
+        for stat in stats:
+            appeal_type = stat['type'] or 'Не определен'
+            type_counts[appeal_type] = type_counts.get(appeal_type, 0) + stat['count']
+        
+        # Подготавливаем данные для диаграммы
+        if not type_counts:
+            # Создаем пустую диаграмму если нет данных
+            fig, ax = plt.subplots(figsize=(10, 8))
+            ax.text(0.5, 0.5, 'Нет данных', ha='center', va='center', transform=ax.transAxes)
+            ax.set_title('Распределение по типам обращений')
+            return fig
+        
+        types = list(type_counts.keys())
+        counts = list(type_counts.values())
+        
+        # Цветовая схема
+        colors = plt.cm.Set3(np.linspace(0, 1, len(types)))
+        
+        # Создаем диаграмму
+        fig, ax = plt.subplots(figsize=(12, 8))
+        wedges, texts, autotexts = ax.pie(
+            counts, 
+            labels=types, 
+            colors=colors,
+            autopct='%1.1f%%',
+            startangle=90,
+            textprops={'fontsize': 10}
+        )
+        
+        # Улучшаем отображение процентов
+        for autotext in autotexts:
+            autotext.set_color('white')
+            autotext.set_fontweight('bold')
+        
+        ax.set_title('Распределение обращений по типам', fontsize=16, fontweight='bold', pad=20)
+        plt.tight_layout()
+        
+        return fig
+
+    def _create_status_bar_chart(self, stats):
+        """Создание столбчатой диаграммы по статусам обращений"""
+        # Агрегируем данные по статусам
+        status_counts = {}
+        for stat in stats:
+            status = stat['status'] or 'Не определен'
+            status_counts[status] = status_counts.get(status, 0) + stat['count']
+        
+        # Подготавливаем данные для диаграммы
+        if not status_counts:
+            # Создаем пустую диаграмму если нет данных
+            fig, ax = plt.subplots(figsize=(10, 6))
+            ax.text(0.5, 0.5, 'Нет данных', ha='center', va='center', transform=ax.transAxes)
+            ax.set_title('Статусы обращений')
+            return fig
+        
+        statuses = list(status_counts.keys())
+        counts = list(status_counts.values())
+        
+        # Цвета для разных статусов
+        status_colors = {
+            'new': '#36A2EB',
+            'answered': '#4BC0C0',
+            'in_progress': '#FFCE56',
+            'requires_manual_review': '#FF6384',
+            'closed': '#9966FF'
+        }
+        
+        colors = [status_colors.get(status, '#C9CBCF') for status in statuses]
+        
+        # Создаем диаграмму
+        fig, ax = plt.subplots(figsize=(12, 6))
+        bars = ax.bar(statuses, counts, color=colors, edgecolor='black', alpha=0.8)
+        
+        # Добавляем значения на столбцы
+        for bar, count in zip(bars, counts):
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2., height + 0.1,
+                   f'{count}', ha='center', va='bottom', fontweight='bold')
+        
+        ax.set_ylabel('Количество обращений', fontsize=12)
+        ax.set_xlabel('Статусы', fontsize=12)
+        ax.set_title('Распределение обращений по статусам', fontsize=16, fontweight='bold')
+        
+        # Улучшаем отображение подписей
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+        
+        return fig
+
+    def _create_timeline_chart(self, stats):
+        """Создание графика динамики обращений по дням"""
+        try:
+            # Получаем более детальные данные для временной шкалы
+            appeals = self.system.database.get_appeals({
+                'date_from': datetime.now() - timedelta(days=30)
+            }, limit=1000)
+            
+            if not appeals:
+                return None
+            
+            # Группируем по дням
+            daily_counts = {}
+            for appeal in appeals:
+                if isinstance(appeal['created_at'], datetime):
+                    date_key = appeal['created_at'].date()
+                else:
+                    # Если это строка, преобразуем в datetime
+                    date_key = datetime.strptime(appeal['created_at'], '%Y-%m-%d %H:%M:%S').date()
+                
+                daily_counts[date_key] = daily_counts.get(date_key, 0) + 1
+            
+            # Сортируем по дате
+            dates = sorted(daily_counts.keys())
+            counts = [daily_counts[date] for date in dates]
+            
+            # Форматируем даты для подписей
+            date_labels = [date.strftime('%d.%m') for date in dates]
+            
+            # Создаем график
+            fig, ax = plt.subplots(figsize=(14, 6))
+            ax.plot(date_labels, counts, marker='o', linewidth=2, markersize=6, color='#FF6384')
+            ax.fill_between(date_labels, counts, alpha=0.3, color='#FF6384')
+            
+            ax.set_ylabel('Количество обращений', fontsize=12)
+            ax.set_xlabel('Дата', fontsize=12)
+            ax.set_title('Динамика обращений по дням', fontsize=16, fontweight='bold')
+            
+            # Поворачиваем подписи дат
+            plt.xticks(rotation=45, ha='right')
+            
+            # Добавляем сетку
+            ax.grid(True, alpha=0.3)
+            
+            plt.tight_layout()
+            return fig
+            
+        except Exception as e:
+            logger.error(f"❌ Ошибка создания графика динамики: {e}")
+            return None
 
     async def show_stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Показать актуальную статистику в реальном времени"""
@@ -148,8 +366,14 @@ class AnalystBot:
 */stats* - Актуальная статистика в реальном времени
 */trends* - Анализ трендов за 30 дней
 */appeals* - Просмотр последних обращений
+*/charts* - Графики и диаграммы
 */refresh* - Принудительное обновление данных
 */help* - Эта справка
+
+📊 *Графики включают:*
+• Распределение по типам обращений
+• Распределение по статусам
+• Динамику обращений по дням
 
 💡 *Особенности:*
 • Все данные обновляются автоматически при каждом запросе
@@ -181,8 +405,12 @@ class AnalystBot:
             await self.show_trends(update, context)
         elif text == '📝 Обращения':
             await self.show_recent_appeals(update, context)
+        elif text == '📊 Графики':
+            await self.show_charts(update, context)
         elif text == '🔄 Обновить':
             await self.refresh_command(update, context)
+        elif text == 'ℹ️ Помощь':
+            await self.help_command(update, context)
 
     def setup_handlers(self):
         """Настройка обработчиков"""
@@ -190,6 +418,7 @@ class AnalystBot:
         self.application.add_handler(CommandHandler("stats", self.show_stats))
         self.application.add_handler(CommandHandler("trends", self.show_trends))
         self.application.add_handler(CommandHandler("appeals", self.show_recent_appeals))
+        self.application.add_handler(CommandHandler("charts", self.show_charts))
         self.application.add_handler(CommandHandler("refresh", self.refresh_command))
         self.application.add_handler(CommandHandler("help", self.help_command))
         self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
