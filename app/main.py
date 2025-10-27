@@ -52,10 +52,11 @@ class AppealsProcessingSystem:
                     'settlement': address_info.get('settlement'),
                     'street': address_info.get('street'),
                     'house': address_info.get('house'),
-                    'full_address': address_info.get('full_address')
+                    'full_address': address_info.get('full_address'),
+                    'district': address_info.get('district')  # Теперь district будет автоматически определяться если не указан
                 })
             
-            # Сохранение в базу
+            # Сохранение в базу (теперь с автоматическим определением района)
             appeal_id = self.database.store_appeal(appeal_data)
             
             # Генерация ответа для типовых обращений с передачей адресной информации

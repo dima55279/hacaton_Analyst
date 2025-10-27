@@ -274,6 +274,12 @@ class CitizenBot:
         await update.message.chat.send_action(action="typing")
 
         try:
+            # Добавляем district в address_info если есть информация о районе
+            if 'settlement_info' in context.user_data:
+                settlement_info = context.user_data['settlement_info']
+                if 'district' in settlement_info:
+                    address_info['district'] = settlement_info['district']
+            
             # Обработка обращения с адресом
             response = self.system.process_citizen_appeal(
                 user_id=str(user.id),

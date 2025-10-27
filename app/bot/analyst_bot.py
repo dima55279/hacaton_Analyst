@@ -43,38 +43,465 @@ class AnalystBot:
         
         await update.message.reply_text(welcome_text, reply_markup=reply_markup)
 
-    async def show_charts(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Показать графики аналогичные веб-интерфейсу"""
+    async def show_municipality_stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Показать статистику по муниципалитетам"""
         try:
-            await update.message.reply_text("📊 Генерирую графики...")
-            
-            # Получаем данные за последние 30 дней
-            stats = self.system.database.get_appeals_stats(30)
+            # Получаем статистику по муниципалитетам
+            stats = self.system.database.get_municipality_stats(30)
             
             if not stats:
-                await update.message.reply_text("❌ Недостаточно данных для построения графиков.")
+                await update.message.reply_text("❌ Нет данных по муниципалитетам за указанный период.")
+                return
+            
+            response = "🏛️ СТАТИСТИКА ПО МУНИЦИПАЛИТЕТАМ (30 дней)\n\n"
+            
+            # Топ-10 муниципалитетов по количеству обращений
+            response += "📊 Топ-10 по количеству обращений:\n"
+            for i, municipality in enumerate(stats[:10], 1):
+                response += f"{i}. {municipality['municipality']}: {municipality['appeal_count']} обращений\n"
+                response += f"   ✅ Отвечено: {municipality['answered_count']} "
+                response += f"({municipality['response_rate']}%)\n"
+                response += f"   🆕 Новых: {municipality['new_count']} | "
+                response += f"🔄 В работе: {municipality['in_progress_count']}\n\n"
+            
+            # Общая статистика
+            total_appeals = sum(m['appeal_count'] for m in stats)
+            municipalities_with_data = len([m for m in stats if m['municipality'] != 'Не указан'])
+            
+            response += f"📈 Общая статистика:\n"
+            response += f"• Всего обращений с указанием муниципалитета: {total_appeals}\n"
+            response += f"• Количество муниципалитетов: {municipalities_with_data}\n"
+            
+            # ИСПРАВЛЕНИЕ: Проверяем, чтобы не делить на ноль
+            if municipalities_with_data > 0:
+                avg_appeals = total_appeals / municipalities_with_data
+                response += f"• Среднее количество обращений на муниципалитет: {avg_appeals:.1f}\n"
+            else:
+                response += f"• Среднее количество обращений на муниципалитет: нет данных\n"
+            
+            response += f"\n⏰ Обновлено: {datetime.now().strftime('%H:%M:%S')}"
+            
+            await update.message.reply_text(response)
+            
+        except Exception as e:
+            logger.error(f"❌ Ошибка получения статистики по муниципалитетам: {e}")
+            await update.message.reply_text("❌ Ошибка при получении статистики по муниципалитетам.")
+
+    async def show_municipality_charts(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Показать графики по муниципалитетам"""
+        try:
+            await update.message.reply_text("🏛️ Генерирую графики по муниципалитетам...")
+            
+            # Получаем данные
+            stats = self.system.database.get_municipality_stats(30)
+            type_stats = self.system.database.get_municipality_type_stats(30)
+            
+            logger.info(f"📊 Получено {len(stats)} записей статистики по муниципалитетам")
+            logger.info(f"📊 Получено {len(type_stats)} записей по типам обращений")
+            
+            if not stats:
+                await update.message.reply_text("❌ Недостаточно данных для построения графиков по муниципалитетам.")
                 return
 
             # Создаем графики
-            charts = await self._generate_charts(stats)
+            charts = await self._generate_municipality_charts(stats, type_stats)
             
+            if not charts:
+                await update.message.reply_text("❌ Не удалось сгенерировать графики по муниципалитетам.")
+                return
+
             # Отправляем графики
             for chart_data in charts:
-                photo_buffer = io.BytesIO()
-                chart_data['figure'].savefig(photo_buffer, format='PNG', dpi=100, bbox_inches='tight')
-                photo_buffer.seek(0)
+                try:
+                    photo_buffer = io.BytesIO()
+                    chart_data['figure'].savefig(photo_buffer, format='PNG', dpi=100, bbox_inches='tight')
+                    photo_buffer.seek(0)
+                    
+                    await update.message.reply_photo(
+                        photo=photo_buffer,
+                        caption=chart_data['caption']
+                    )
+                    
+                    # Закрываем figure для освобождения памяти
+                    plt.close(chart_data['figure'])
+                    
+                except Exception as e:
+                    logger.error(f"❌ Ошибка отправки графика: {e}")
+                    continue
+                    
+        except Exception as e:
+            logger.error(f"❌ Ошибка генерации графиков по муниципалитетам: {e}")
+            await update.message.reply_text("❌ Ошибка при генерации графиков по муниципалитетам.")
+
+    def _generate_municipality_charts(self, stats, type_stats):
+        """Генерация графиков по муниципалитетам"""
+        charts = []
+        
+        try:
+            logger.info(f"🔄 Начинаем генерацию графиков по муниципалитетам. stats: {len(stats)}")
+            
+            # Фильтруем статистику - убираем "Не указан"
+            valid_stats = [m for m in stats if m['municipality'] != 'Не указан']
+            logger.info(f"📊 Валидных муниципалитетов: {len(valid_stats)}")
+            
+            if not valid_stats:
+                return charts
+
+            # 1. Столбчатая диаграмма по количеству обращений
+            logger.info("📊 Создаем столбчатую диаграмму...")
+            bar_chart = self._create_municipality_bar_chart(valid_stats)
+            if bar_chart:
+                charts.append({
+                    'figure': bar_chart,
+                    'caption': "📊 Количество обращений по муниципалитетам (топ-10)"
+                })
+
+            # 2. Круговая диаграмма распределения обращений
+            logger.info("📈 Создаем круговую диаграмму...")
+            pie_chart = self._create_municipality_pie_chart(valid_stats)
+            if pie_chart:
+                charts.append({
+                    'figure': pie_chart,
+                    'caption': "📈 Распределение обращений по муниципалитетам"
+                })
+
+            # 3. Heatmap по типам обращений в муниципалитетах
+            if type_stats:
+                logger.info("🔥 Создаем тепловую карту...")
+                heatmap = self._create_municipality_heatmap(type_stats)
+                if heatmap:
+                    charts.append({
+                        'figure': heatmap,
+                        'caption': "🔥 Распределение типов обращений по муниципалитетам"
+                    })
+            
+            logger.info(f"✅ Успешно создано {len(charts)} графиков по муниципалитетам")
                 
-                await update.message.reply_photo(
-                    photo=photo_buffer,
-                    caption=chart_data['caption']
-                )
-                
-                # Закрываем figure для освобождения памяти
-                plt.close(chart_data['figure'])
-                
+        except Exception as e:
+            logger.error(f"❌ Ошибка создания графиков по муниципалитетам: {e}")
+            
+        return charts
+
+    def _create_municipality_bar_chart(self, stats):
+        """Создание столбчатой диаграммы по муниципалитетам с полными названиями"""
+        try:
+            # Берем топ-10 муниципалитетов
+            top_municipalities = stats[:10]
+            
+            logger.info(f"📊 Создаем барчарт для {len(top_municipalities)} муниципалитетов")
+            
+            if not top_municipalities:
+                return None
+            
+            municipalities = []
+            counts = []
+            
+            for m in top_municipalities:
+                name = m['municipality']
+                # Сохраняем полное название без сокращений
+                municipalities.append(name)
+                counts.append(m['appeal_count'])
+            
+            # Настраиваем стиль
+            plt.style.use('seaborn-v0_8')
+            
+            # Увеличиваем размер фигуры для лучшего отображения длинных названий
+            fig, ax = plt.subplots(figsize=(16, 10))
+            
+            # Используем разные цвета для лучшей визуализации
+            colors = plt.cm.viridis(np.linspace(0, 1, len(municipalities)))
+            
+            bars = ax.bar(municipalities, counts, color=colors, edgecolor='black', alpha=0.8)
+            
+            # Добавляем значения на столбцы
+            for bar, count in zip(bars, counts):
+                height = bar.get_height()
+                ax.text(bar.get_x() + bar.get_width()/2., height + 0.1,
+                    f'{count}', ha='center', va='bottom', fontweight='bold', fontsize=10)
+            
+            ax.set_ylabel('Количество обращений', fontsize=12, fontweight='bold')
+            ax.set_xlabel('Муниципалитеты', fontsize=12, fontweight='bold')
+            ax.set_title('Топ-10 муниципалитетов по количеству обращений', 
+                        fontsize=16, fontweight='bold', pad=20)
+            
+            # Улучшаем отображение подписей - увеличиваем угол и уменьшаем шрифт для длинных названий
+            plt.xticks(
+                rotation=45, 
+                ha='right',
+                fontsize=9,  # Уменьшаем шрифт для лучшего размещения
+                wrap=True    # Разрешаем перенос слов
+            )
+            plt.yticks(fontsize=10)
+            
+            # Добавляем сетку
+            ax.grid(True, axis='y', alpha=0.3)
+            ax.set_axisbelow(True)
+            
+            # Автоматически настраиваем layout для предотвращения обрезания
+            plt.tight_layout()
+            
+            return fig
+            
+        except Exception as e:
+            logger.error(f"❌ Ошибка создания столбчатой диаграммы: {e}")
+            return None
+
+    def _create_municipality_heatmap(self, type_stats):
+        """Создание тепловой карты по типам обращений в муниципалитетах с полными названиями"""
+        try:
+            # Группируем данные для тепловой карты
+            municipalities = list(set([s['municipality'] for s in type_stats]))
+            appeal_types = list(set([s['appeal_type'] for s in type_stats]))
+            
+            # Создаем матрицу
+            data_matrix = np.zeros((len(municipalities), len(appeal_types)))
+            
+            for stat in type_stats:
+                i = municipalities.index(stat['municipality'])
+                j = appeal_types.index(stat['appeal_type'])
+                data_matrix[i, j] = stat['type_count']
+            
+            # Ограничиваем количество для читаемости, но сохраняем полные названия
+            if len(municipalities) > 15:
+                # Сортируем по общему количеству обращений и берем топ-15
+                municipality_totals = data_matrix.sum(axis=1)
+                top_indices = np.argsort(municipality_totals)[-15:][::-1]
+                municipalities = [municipalities[i] for i in top_indices]
+                data_matrix = data_matrix[top_indices, :]
+            
+            if len(appeal_types) > 10:
+                # Сортируем типы по частоте и берем топ-10
+                type_totals = data_matrix.sum(axis=0)
+                top_type_indices = np.argsort(type_totals)[-10:][::-1]
+                appeal_types = [appeal_types[i] for i in top_type_indices]
+                data_matrix = data_matrix[:, top_type_indices]
+            
+            # Создаем тепловую карту с увеличенным размером
+            fig, ax = plt.subplots(figsize=(16, 12))
+            im = ax.imshow(data_matrix, cmap='YlOrRd', aspect='auto')
+            
+            # Настройки осей с полными названиями
+            ax.set_xticks(np.arange(len(appeal_types)))
+            ax.set_yticks(np.arange(len(municipalities)))
+            
+            # Устанавливаем подписи с полными названиями и настраиваем отображение
+            ax.set_xticklabels(appeal_types, rotation=45, ha='right', fontsize=9)
+            ax.set_yticklabels(municipalities, fontsize=9)  # Полные названия без сокращений
+            
+            # Добавляем значения в ячейки
+            for i in range(len(municipalities)):
+                for j in range(len(appeal_types)):
+                    if data_matrix[i, j] > 0:
+                        text = ax.text(j, i, int(data_matrix[i, j]),
+                                      ha="center", va="center", color="black", fontsize=8)
+            
+            ax.set_title("Тепловая карта: типы обращений по муниципалитетам", 
+                        fontsize=16, fontweight='bold', pad=20)
+            plt.colorbar(im, ax=ax, label='Количество обращений')
+            
+            # Увеличиваем отступы для предотвращения обрезания
+            plt.tight_layout()
+            
+            return fig
+            
+        except Exception as e:
+            logger.error(f"❌ Ошибка создания тепловой карты: {e}")
+            return None
+
+    def _create_municipality_pie_chart(self, stats):
+        """Создание круговой диаграммы распределения по муниципалитетам с полными названиями"""
+        # Фильтруем муниципалитеты, убирая "Не указан"
+        valid_stats = [m for m in stats if m['municipality'] != 'Не указан']
+        
+        if not valid_stats:
+            fig, ax = plt.subplots(figsize=(10, 8))
+            ax.text(0.5, 0.5, 'Нет данных по муниципалитетам\n(все обращения без указания района)', 
+                    ha='center', va='center', transform=ax.transAxes, fontsize=12)
+            ax.set_title('Распределение по муниципалитетам', fontsize=14)
+            return fig
+        
+        # Берем топ-8 муниципалитетов, остальные объединяем в "Другие"
+        if len(valid_stats) > 8:
+            top_municipalities = valid_stats[:8]
+            other_count = sum(m['appeal_count'] for m in valid_stats[8:])
+            top_municipalities.append({
+                'municipality': 'Другие',
+                'appeal_count': other_count
+            })
+        else:
+            top_municipalities = valid_stats
+        
+        labels = [m['municipality'] for m in top_municipalities]
+        sizes = [m['appeal_count'] for m in top_municipalities]
+        
+        # Если есть длинные названия, разбиваем их на несколько строк
+        formatted_labels = []
+        for label in labels:
+            if len(label) > 20:  # Если название длиннее 20 символов
+                # Разбиваем по словам и пытаемся найти хорошее место для переноса
+                words = label.split()
+                if len(words) > 1:
+                    # Разбиваем на две примерно равные части
+                    mid = len(words) // 2
+                    formatted_label = ' '.join(words[:mid]) + '\n' + ' '.join(words[mid:])
+                    formatted_labels.append(formatted_label)
+                else:
+                    # Если это одно длинное слово, просто разбиваем пополам
+                    mid = len(label) // 2
+                    formatted_labels.append(label[:mid] + '\n' + label[mid:])
+            else:
+                formatted_labels.append(label)
+        
+        # Цветовая схема
+        colors = plt.cm.Paired(np.linspace(0, 1, len(labels)))
+        
+        # Создаем диаграмму с увеличенным размером для лучшего отображения
+        fig, ax = plt.subplots(figsize=(14, 10))
+        wedges, texts, autotexts = ax.pie(
+            sizes, 
+            labels=formatted_labels,  # Используем форматированные подписи
+            colors=colors,
+            autopct='%1.1f%%',
+            startangle=90,
+            textprops={'fontsize': 9}  # Уменьшаем шрифт для лучшего размещения
+        )
+        
+        # Улучшаем отображение
+        for autotext in autotexts:
+            autotext.set_color('white')
+            autotext.set_fontweight('bold')
+            autotext.set_fontsize(8)
+        
+        ax.set_title('Распределение обращений по муниципалитетам', 
+                    fontsize=16, fontweight='bold', pad=20)
+        plt.tight_layout()
+        
+        return fig
+
+    async def show_charts(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Показать все графики включая муниципалитеты"""
+        try:
+            await update.message.reply_text("📊 Генерирую все графики...")
+            
+            # Получаем данные за последние 30 дней
+            stats = self.system.database.get_appeals_stats(30)
+            municipality_stats = self.system.database.get_municipality_stats(30)
+            municipality_type_stats = self.system.database.get_municipality_type_stats(30)
+            
+            logger.info(f"📊 Получено {len(municipality_stats)} записей статистики по муниципалитетам")
+            logger.info(f"📊 Получено {len(municipality_type_stats)} записей по типам обращений")
+            
+            # Создаем все графики
+            charts = await self._generate_all_charts(stats, municipality_stats, municipality_type_stats)
+            
+            if not charts:
+                await update.message.reply_text("❌ Недостаточно данных для построения графиков.")
+                return
+
+            # Отправляем графики
+            for chart_data in charts:
+                try:
+                    photo_buffer = io.BytesIO()
+                    chart_data['figure'].savefig(photo_buffer, format='PNG', dpi=100, bbox_inches='tight')
+                    photo_buffer.seek(0)
+                    
+                    await update.message.reply_photo(
+                        photo=photo_buffer,
+                        caption=chart_data['caption']
+                    )
+                    
+                    # Закрываем figure для освобождения памяти
+                    plt.close(chart_data['figure'])
+                    
+                except Exception as e:
+                    logger.error(f"❌ Ошибка отправки графика: {e}")
+                    continue
+                    
         except Exception as e:
             logger.error(f"❌ Ошибка генерации графиков: {e}")
             await update.message.reply_text("❌ Ошибка при генерации графиков.")
+
+    async def _generate_all_charts(self, stats, municipality_stats, municipality_type_stats):
+        """Генерация всех графиков включая муниципалитеты"""
+        charts = []
+        
+        try:
+            # 1. Обычные графики
+            regular_charts = await self._generate_charts(stats)
+            charts.extend(regular_charts)
+            
+            # 2. Графики по муниципалитетам, если есть данные
+            if municipality_stats and any(m['municipality'] != 'Не указан' for m in municipality_stats):
+                municipality_charts = self._generate_municipality_charts(municipality_stats, municipality_type_stats)
+                charts.extend(municipality_charts)
+            else:
+                # График с информацией о недостатке данных
+                fig, ax = plt.subplots(figsize=(10, 6))
+                ax.text(0.5, 0.5, 'Недостаточно данных по муниципалитетам\n\nДля отображения графиков необходимо:\n1. Создать обращения с указанием населенных пунктов\n2. Убедиться, что бот корректно определяет муниципалитеты', 
+                        ha='center', va='center', transform=ax.transAxes, fontsize=12, 
+                        bbox=dict(boxstyle="round,pad=0.3", facecolor="lightblue", alpha=0.7))
+                ax.set_title('Данные по муниципалитетам отсутствуют', fontsize=14, pad=20)
+                ax.set_xticks([])
+                ax.set_yticks([])
+                
+                charts.append({
+                    'figure': fig,
+                    'caption': "ℹ️ Для отображения графиков по муниципалитетам нужны данные"
+                })
+            
+        except Exception as e:
+            logger.error(f"❌ Ошибка создания всех графиков: {e}")
+            
+        return charts
+
+    def _generate_municipality_charts(self, stats, type_stats):
+        """Генерация графиков по муниципалитетам"""
+        charts = []
+        
+        try:
+            logger.info(f"🔄 Начинаем генерацию графиков по муниципалитетам. stats: {len(stats)}")
+            
+            # Фильтруем статистику - убираем "Не указан"
+            valid_stats = [m for m in stats if m['municipality'] != 'Не указан']
+            logger.info(f"📊 Валидных муниципалитетов: {len(valid_stats)}")
+            
+            if not valid_stats:
+                return charts
+
+            # 1. Столбчатая диаграмма по количеству обращений
+            logger.info("📊 Создаем столбчатую диаграмму...")
+            bar_chart = self._create_municipality_bar_chart(valid_stats)
+            if bar_chart:
+                charts.append({
+                    'figure': bar_chart,
+                    'caption': "📊 Количество обращений по муниципалитетам (топ-10)"
+                })
+
+            # 2. Круговая диаграмма распределения обращений
+            logger.info("📈 Создаем круговую диаграмму...")
+            pie_chart = self._create_municipality_pie_chart(valid_stats)
+            if pie_chart:
+                charts.append({
+                    'figure': pie_chart,
+                    'caption': "📈 Распределение обращений по муниципалитетам"
+                })
+
+            # 3. Heatmap по типам обращений в муниципалитетах
+            if type_stats:
+                logger.info("🔥 Создаем тепловую карту...")
+                heatmap = self._create_municipality_heatmap(type_stats)
+                if heatmap:
+                    charts.append({
+                        'figure': heatmap,
+                        'caption': "🔥 Распределение типов обращений по муниципалитетам"
+                    })
+            
+            logger.info(f"✅ Успешно создано {len(charts)} графиков по муниципалитетам")
+                
+        except Exception as e:
+            logger.error(f"❌ Ошибка создания графиков по муниципалитетам: {e}")
+            
+        return charts
 
     async def _generate_charts(self, stats):
         """Генерация графиков на основе статистики"""
@@ -334,6 +761,7 @@ class AnalystBot:
                 response += f"{i}. {status_emoji} *{appeal_type}*\n"
                 response += f"   📄 {appeal['text'][:80]}...\n"
                 response += f"   🏷️ Статус: {appeal['status']}\n"
+                response += f"   🏛️ Муниципалитет: {appeal.get('district', 'не указан')}\n"
                 response += f"   ⏰ {created_time}\n\n"
             
             response += f"🔄 Автоматически обновляется при запросе"
@@ -347,8 +775,6 @@ class AnalystBot:
     async def refresh_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Принудительное обновление данных"""
         try:
-            # Просто отправляем сообщение, что данные актуальны
-            # Фактическое обновление происходит при каждом запросе к базе
             response = "🔄 Данные успешно обновлены!\n\n"
             response += "Все команды теперь показывают актуальную информацию из базы данных в реальном времени."
             
@@ -370,10 +796,17 @@ class AnalystBot:
 */refresh* - Принудительное обновление данных
 */help* - Эта справка
 
+🏛️ *Статистика по муниципалитетам:*
+• Топ-10 муниципалитетов по обращениям
+• Процент ответов по муниципалитетам
+• Распределение типов обращений
+• Тепловые карты активности
+
 📊 *Графики включают:*
 • Распределение по типам обращений
 • Распределение по статусам
 • Динамику обращений по дням
+• Статистику по муниципалитетам
 
 💡 *Особенности:*
 • Все данные обновляются автоматически при каждом запросе
@@ -406,19 +839,19 @@ class AnalystBot:
         elif text == '📝 Обращения':
             await self.show_recent_appeals(update, context)
         elif text == '📊 Графики':
-            await self.show_charts(update, context)
+            await self.show_charts(update, context)  # Теперь включает муниципалитеты
         elif text == '🔄 Обновить':
             await self.refresh_command(update, context)
         elif text == 'ℹ️ Помощь':
             await self.help_command(update, context)
 
     def setup_handlers(self):
-        """Настройка обработчиков"""
+        """Настройка обработчиков - УДАЛЕНЫ муниципальные команды"""
         self.application.add_handler(CommandHandler("start", self.start_command))
         self.application.add_handler(CommandHandler("stats", self.show_stats))
         self.application.add_handler(CommandHandler("trends", self.show_trends))
         self.application.add_handler(CommandHandler("appeals", self.show_recent_appeals))
-        self.application.add_handler(CommandHandler("charts", self.show_charts))
+        self.application.add_handler(CommandHandler("charts", self.show_charts))  # Теперь включает всё
         self.application.add_handler(CommandHandler("refresh", self.refresh_command))
         self.application.add_handler(CommandHandler("help", self.help_command))
         self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))

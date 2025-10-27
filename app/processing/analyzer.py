@@ -22,6 +22,71 @@ class AppealsAnalyzer:
         ]
         self.settlements_data = self._load_settlements_data()
 
+    def _find_municipality_by_settlement(self, settlement_name, district_name=None):
+        """Поиск муниципального образования по названию населенного пункта и району"""
+        if not settlement_name or not self.settlements_data:
+            return None
+        
+        settlement_lower = settlement_name.lower().strip()
+        
+        logger.info(f"🔍 Поиск муниципалитета для: {settlement_name}, район: {district_name}")
+        
+        # Сначала ищем по точному совпадению названия населенного пункта в муниципалитетах
+        for municipality in self.settlements_data:
+            mun_name_lower = municipality['name'].lower()
+            
+            # Проверяем различные варианты названий
+            if (settlement_lower in mun_name_lower or 
+                mun_name_lower in settlement_lower or
+                any(word in mun_name_lower for word in settlement_lower.split())):
+                
+                logger.info(f"✅ Найден муниципалитет по названию: {municipality['name']}")
+                return municipality
+        
+        # Если не нашли по названию, ищем по ключевым словам
+        for municipality in self.settlements_data:
+            mun_name_lower = municipality['name'].lower()
+            
+            # Для городских округов
+            if 'городской округ' in mun_name_lower:
+                if 'тамбов' in settlement_lower:
+                    logger.info(f"✅ Найден городской округ для Тамбова: {municipality['name']}")
+                    return municipality
+                elif any(keyword in settlement_lower for keyword in ['кирсанов', 'котовск', 'мичуринск', 'моршанск', 'рассказово', 'уварово']):
+                    city_name = None
+                    if 'кирсанов' in settlement_lower:
+                        city_name = 'Кирсанов'
+                    elif 'котовск' in settlement_lower:
+                        city_name = 'Котовск'
+                    elif 'мичуринск' in settlement_lower:
+                        city_name = 'Мичуринск'
+                    elif 'моршанск' in settlement_lower:
+                        city_name = 'Моршанск'
+                    elif 'рассказово' in settlement_lower:
+                        city_name = 'Рассказово'
+                    elif 'уварово' in settlement_lower:
+                        city_name = 'Уварово'
+                    
+                    if city_name and city_name.lower() in mun_name_lower:
+                        logger.info(f"✅ Найден городской округ для {city_name}: {municipality['name']}")
+                        return municipality
+        
+        # Муниципалитет Тамбовского района по умолчанию
+        default_municipality = self._find_tambov_default()
+        if default_municipality:
+            logger.info(f"🔄 Использован муниципалитет по умолчанию: {default_municipality['name']}")
+            return default_municipality
+        
+        logger.warning(f"❌ Муниципалитет для {settlement_name} не найден")
+        return None
+
+    def _find_tambov_default(self):
+        """Находит муниципалитет Тамбовского района по умолчанию"""
+        for municipality in self.settlements_data:
+            if 'тамбовский район' in municipality['name'].lower():
+                return municipality
+        return None
+
     def _load_settlements_data(self):
         """Загрузка данных о муниципальных образованиях"""
         try:

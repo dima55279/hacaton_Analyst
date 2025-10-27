@@ -67,11 +67,13 @@ class DatabaseManager:
                 street VARCHAR(255),
                 house VARCHAR(50),
                 full_address TEXT,
-                municipality_contacts JSON,  -- Новое поле для хранения контактов муниципалитета
+                district VARCHAR(255),  -- Добавлено поле для района
                 INDEX idx_user (user_id),
                 INDEX idx_type (type),
                 INDEX idx_status (status),
-                INDEX idx_created (created_at)
+                INDEX idx_created (created_at),
+                INDEX idx_settlement (settlement),
+                INDEX idx_district (district)  -- Добавлен индекс для района
             )
             """
 
@@ -102,6 +104,7 @@ class DatabaseManager:
                 INDEX idx_district (district)
             )
             """
+
             cursor.execute(create_appeals_table)
             cursor.execute(create_trends_table)
             cursor.execute(create_settlements_table)
@@ -114,10 +117,21 @@ class DatabaseManager:
             raise
 
     def store_appeal(self, appeal_data):
-        """Сохранение обращения в базу с поддержкой адреса"""
+        """Сохранение обращения в базу с поддержкой адреса и автоматическим определением района"""
         conn = self.get_connection()
         try:
             cursor = conn.cursor()
+            
+            # Если есть населенный пункт, но нет района, пытаемся определить район
+            settlement = appeal_data.get('settlement')
+            district = appeal_data.get('district')
+            
+            if settlement and not district:
+                # Пытаемся определить район по населенному пункту
+                district = self._determine_district_by_settlement(settlement)
+                if district:
+                    appeal_data['district'] = district
+                    logger.info(f"📍 Автоматически определен район для {settlement}: {district}")
             
             # Определяем поля и значения в зависимости от наличия адреса
             fields = ['user_id', 'text', 'type', 'platform', 'status', 'created_at']
@@ -132,7 +146,7 @@ class DatabaseManager:
             ]
             
             # Добавляем поля адреса, если они есть
-            address_fields = ['settlement', 'street', 'house', 'full_address']
+            address_fields = ['settlement', 'street', 'house', 'full_address', 'district']
             for field in address_fields:
                 if field in appeal_data and appeal_data[field]:
                     fields.append(field)
@@ -148,14 +162,145 @@ class DatabaseManager:
             appeal_id = cursor.lastrowid
             cursor.close()
             
-            logger.info(f"💾 Сохранено обращение ID: {appeal_id}")
+            logger.info(f"💾 Сохранено обращение ID: {appeal_id}, район: {district}")
             return appeal_id
             
         except Error as e:
             logger.error(f"❌ Ошибка сохранения обращения: {e}")
             raise
 
-    # Остальные методы остаются без изменений...
+    def _determine_district_by_settlement(self, settlement):
+        """Определение района по названию населенного пункта"""
+        if not settlement:
+            return None
+            
+        settlement_lower = settlement.lower()
+        
+        # Сопоставление населенных пунктов с районами
+        district_mapping = {
+            'тамбов': 'Городской округ город Тамбов',
+            'мичуринск': 'Городской округ город Мичуринск',
+            'моршанск': 'Городской округ город Моршанск',
+            'кирсанов': 'Городской округ город Кирсанов',
+            'котовск': 'Городской округ город Котовск',
+            'рассказово': 'Городской округ город Рассказово',
+            'уварово': 'Городской округ город Уварово',
+            'бондари': 'Бондарский район',
+            'гавриловка': 'Гавриловский район',
+            'жердевка': 'Жердевский район',
+            'знаменка': 'Знаменский район',
+            'инжавино': 'Инжавинский район',
+            'мордово': 'Мордовский район',
+            'мучкапский': 'Мучкапский район',
+            'первомайский': 'Первомайский район',
+            'петровское': 'Петровский район',
+            'пичаево': 'Пичаевский район',
+            'ржакса': 'Ржаксинский район',
+            'сатинка': 'Сампурский район',
+            'сосновка': 'Сосновский район',
+            'староюрьево': 'Староюрьевский район',
+            'токарёвка': 'Токарёвский район',
+            'умёт': 'Умётский район'
+        }
+        
+        for key, district in district_mapping.items():
+            if key in settlement_lower:
+                return district
+        
+        # Если точного совпадения нет, проверяем частичные совпадения
+        for key, district in district_mapping.items():
+            if any(word in settlement_lower for word in key.split()):
+                return district
+        
+        return None
+
+    def get_municipality_stats(self, period_days=30):
+        """Статистика по муниципалитетам за период"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor(dictionary=True)
+            
+            query = """
+            SELECT 
+                COALESCE(a.district, 'Не указан') as municipality,
+                COUNT(*) as appeal_count,
+                COUNT(CASE WHEN a.status = 'answered' THEN 1 END) as answered_count,
+                COUNT(CASE WHEN a.status = 'new' THEN 1 END) as new_count,
+                COUNT(CASE WHEN a.status = 'in_progress' THEN 1 END) as in_progress_count,
+                ROUND(COUNT(CASE WHEN a.status = 'answered' THEN 1 END) * 100.0 / COUNT(*), 2) as response_rate
+            FROM appeals a
+            WHERE a.created_at >= DATE_SUB(NOW(), INTERVAL %s DAY)
+            GROUP BY COALESCE(a.district, 'Не указан')
+            ORDER BY appeal_count DESC
+            LIMIT 15
+            """
+            
+            cursor.execute(query, (period_days,))
+            stats = cursor.fetchall()
+            cursor.close()
+            
+            logger.info(f"🏛️ Получена статистика по {len(stats)} муниципалитетам")
+            return stats
+            
+        except Error as e:
+            logger.error(f"❌ Ошибка получения статистики по муниципалитетам: {e}")
+            return []
+
+    def get_municipality_trends(self, period_days=30):
+        """Динамика обращений по муниципалитетам за период"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor(dictionary=True)
+            
+            query = """
+            SELECT 
+                DATE(a.created_at) as date,
+                COALESCE(a.district, 'Не указан') as municipality,
+                COUNT(*) as daily_count
+            FROM appeals a
+            WHERE a.created_at >= DATE_SUB(NOW(), INTERVAL %s DAY)
+            GROUP BY DATE(a.created_at), COALESCE(a.district, 'Не указан')
+            ORDER BY date, municipality
+            """
+            
+            cursor.execute(query, (period_days,))
+            trends = cursor.fetchall()
+            cursor.close()
+            
+            return trends
+            
+        except Error as e:
+            logger.error(f"❌ Ошибка получения трендов по муниципалитетам: {e}")
+            return []
+
+    def get_municipality_type_stats(self, period_days=30):
+        """Статистика по типам обращений в разрезе муниципалитетов"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor(dictionary=True)
+            
+            query = """
+            SELECT 
+                COALESCE(a.district, 'Не указан') as municipality,
+                COALESCE(a.type, 'Не определен') as appeal_type,
+                COUNT(*) as type_count
+            FROM appeals a
+            WHERE a.created_at >= DATE_SUB(NOW(), INTERVAL %s DAY)
+            GROUP BY COALESCE(a.district, 'Не указан'), COALESCE(a.type, 'Не определен')
+            ORDER BY municipality, type_count DESC
+            """
+            
+            cursor.execute(query, (period_days,))
+            stats = cursor.fetchall()
+            cursor.close()
+            
+            return stats
+            
+        except Error as e:
+            logger.error(f"❌ Ошибка получения статистики по типам обращений: {e}")
+            return []
+
+    # Остальные существующие методы остаются без изменений...
     def update_appeal(self, appeal_id, update_data):
         """Обновление обращения"""
         conn = self.get_connection()
