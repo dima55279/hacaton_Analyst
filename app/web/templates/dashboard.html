@@ -13,6 +13,9 @@
         .loading { color: #666; text-align: center; padding: 20px; }
         .error { color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 4px; margin: 10px 0; }
         .empty-state { color: #666; text-align: center; padding: 40px; }
+        .section-title { grid-column: span 2; margin-top: 30px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 2px solid #eee; }
+        .heatmap-cell { padding: 8px; text-align: center; border: 1px solid #ddd; }
+        .heatmap-header { font-weight: bold; background: #f5f5f5; }
     </style>
 </head>
 <body>
@@ -28,6 +31,7 @@
     </div>
 
     <div class="dashboard">
+        <!-- Основные графики -->
         <div class="card">
             <h3>Распределение по типам</h3>
             <div id="typeChartContainer">
@@ -48,6 +52,42 @@
             </div>
         </div>
         
+        <!-- Раздел муниципалитетов -->
+        <div class="section-title">
+            <h2>🏛️ Статистика по муниципалитетам</h2>
+        </div>
+        
+        <div class="card">
+            <h3>Топ муниципалитетов по обращениям</h3>
+            <div id="municipalityBarChartContainer">
+                <div class="loading" id="municipalityBarChartLoading">Загрузка данных...</div>
+                <canvas id="municipalityBarChart" style="display: none;"></canvas>
+                <div class="empty-state" id="municipalityBarChartEmpty" style="display: none;">Нет данных по муниципалитетам</div>
+                <div class="error" id="municipalityBarChartError" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>Распределение по муниципалитетам</h3>
+            <div id="municipalityPieChartContainer">
+                <div class="loading" id="municipalityPieChartLoading">Загрузка данных...</div>
+                <canvas id="municipalityPieChart" style="display: none;"></canvas>
+                <div class="empty-state" id="municipalityPieChartEmpty" style="display: none;">Нет данных по муниципалитетам</div>
+                <div class="error" id="municipalityPieChartError" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <div class="card" style="grid-column: span 2;">
+            <h3>Тепловая карта: типы обращений по муниципалитетам</h3>
+            <div id="municipalityHeatmapContainer">
+                <div class="loading" id="municipalityHeatmapLoading">Загрузка данных...</div>
+                <div id="municipalityHeatmap" style="display: none; overflow-x: auto;"></div>
+                <div class="empty-state" id="municipalityHeatmapEmpty" style="display: none;">Нет данных для тепловой карты</div>
+                <div class="error" id="municipalityHeatmapError" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <!-- Таблица обращений -->
         <div class="card" style="grid-column: span 2;">
             <h3>Последние обращения</h3>
             <div id="appealsTableContainer">
@@ -60,7 +100,7 @@
     </div>
 
     <script>
-        let typeChart, statusChart;
+        let typeChart, statusChart, municipalityBarChart, municipalityPieChart;
 
         // Функции для управления состоянием UI
         function showLoading(elementId) {
@@ -96,39 +136,51 @@
         async function loadData() {
             const period = document.getElementById('periodSelect').value;
             
+            // Показываем загрузку для всех графиков
             showLoading('typeChart');
             showLoading('statusChart');
+            showLoading('municipalityBarChart');
+            showLoading('municipalityPieChart');
+            showLoading('municipalityHeatmap');
             showLoading('appealsTable');
             
             try {
-                // Загрузка статистики
+                // Загрузка основной статистики
                 const statsResponse = await fetch(`/api/stats?period=${period}`);
-                if (!statsResponse.ok) {
-                    throw new Error(`Ошибка загрузки статистики: ${statsResponse.status}`);
-                }
+                if (!statsResponse.ok) throw new Error(`Ошибка загрузки статистики: ${statsResponse.status}`);
                 const stats = await statsResponse.json();
                 
                 // Загрузка трендов
                 const trendsResponse = await fetch(`/api/trends?period=${period}`);
-                if (!trendsResponse.ok) {
-                    throw new Error(`Ошибка загрузки трендов: ${trendsResponse.status}`);
-                }
+                if (!trendsResponse.ok) throw new Error(`Ошибка загрузки трендов: ${trendsResponse.status}`);
                 const trends = await trendsResponse.json();
+                
+                // Загрузка статистики по муниципалитетам
+                const municipalityStatsResponse = await fetch(`/api/municipality_stats?period=${period}`);
+                if (!municipalityStatsResponse.ok) throw new Error(`Ошибка загрузки статистики по муниципалитетам: ${municipalityStatsResponse.status}`);
+                const municipalityStats = await municipalityStatsResponse.json();
+                
+                // Загрузка статистики по типам обращений в муниципалитетах
+                const municipalityTypeStatsResponse = await fetch(`/api/municipality_type_stats?period=${period}`);
+                if (!municipalityTypeStatsResponse.ok) throw new Error(`Ошибка загрузки статистики по типам обращений: ${municipalityTypeStatsResponse.status}`);
+                const municipalityTypeStats = await municipalityTypeStatsResponse.json();
                 
                 // Загрузка обращений
                 const appealsResponse = await fetch('/api/appeals?limit=10');
-                if (!appealsResponse.ok) {
-                    throw new Error(`Ошибка загрузки обращений: ${appealsResponse.status}`);
-                }
+                if (!appealsResponse.ok) throw new Error(`Ошибка загрузки обращений: ${appealsResponse.status}`);
                 const appeals = await appealsResponse.json();
                 
                 updateCharts(stats, trends);
+                updateMunicipalityCharts(municipalityStats, municipalityTypeStats);
                 updateAppealsTable(appeals);
                 
             } catch (error) {
                 console.error('Ошибка загрузки данных:', error);
                 showError('typeChart', error.message);
                 showError('statusChart', error.message);
+                showError('municipalityBarChart', error.message);
+                showError('municipalityPieChart', error.message);
+                showError('municipalityHeatmap', error.message);
                 showError('appealsTable', error.message);
             }
         }
@@ -272,6 +324,233 @@
             }
         }
 
+        // НОВЫЕ ФУНКЦИИ ДЛЯ МУНИЦИПАЛИТЕТОВ
+        function updateMunicipalityCharts(municipalityStats, municipalityTypeStats) {
+            // Обновляем графики муниципалитетов
+            updateMunicipalityBarChart(municipalityStats);
+            updateMunicipalityPieChart(municipalityStats);
+            updateMunicipalityHeatmap(municipalityTypeStats);
+        }
+
+        function updateMunicipalityBarChart(stats) {
+            if (!stats || stats.length === 0) {
+                showEmpty('municipalityBarChart');
+                return;
+            }
+            
+            try {
+                // Фильтруем муниципалитеты (убираем "Не указан")
+                const validStats = stats.filter(s => s.municipality !== 'Не указан');
+                
+                if (validStats.length === 0) {
+                    showEmpty('municipalityBarChart');
+                    return;
+                }
+                
+                // Берем топ-10
+                const topStats = validStats.slice(0, 10);
+                
+                const labels = topStats.map(s => s.municipality);
+                const data = topStats.map(s => s.appeal_count);
+                
+                // Цвета для графика
+                const backgroundColors = [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+                    '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF',
+                    '#4BC0C0', '#9966FF'
+                ];
+                
+                if (municipalityBarChart) municipalityBarChart.destroy();
+                
+                municipalityBarChart = new Chart(document.getElementById('municipalityBarChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Количество обращений',
+                            data: data,
+                            backgroundColor: backgroundColors.slice(0, labels.length),
+                            borderColor: backgroundColors.slice(0, labels.length),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Топ муниципалитетов по обращениям'
+                            }
+                        }
+                    }
+                });
+                
+                showContent('municipalityBarChart');
+                
+            } catch (error) {
+                console.error('Ошибка обновления столбчатой диаграммы муниципалитетов:', error);
+                showError('municipalityBarChart', 'Ошибка построения графика');
+            }
+        }
+
+        function updateMunicipalityPieChart(stats) {
+            if (!stats || stats.length === 0) {
+                showEmpty('municipalityPieChart');
+                return;
+            }
+            
+            try {
+                // Фильтруем муниципалитеты (убираем "Не указан")
+                const validStats = stats.filter(s => s.municipality !== 'Не указан');
+                
+                if (validStats.length === 0) {
+                    showEmpty('municipalityPieChart');
+                    return;
+                }
+                
+                // Берем топ-8, остальные объединяем в "Другие"
+                let topStats, otherCount;
+                if (validStats.length > 8) {
+                    topStats = validStats.slice(0, 8);
+                    otherCount = validStats.slice(8).reduce((sum, s) => sum + s.appeal_count, 0);
+                    topStats.push({
+                        municipality: 'Другие',
+                        appeal_count: otherCount
+                    });
+                } else {
+                    topStats = validStats;
+                }
+                
+                const labels = topStats.map(s => s.municipality);
+                const data = topStats.map(s => s.appeal_count);
+                
+                // Цветовая схема
+                const backgroundColors = [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+                    '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF',
+                    '#4BC0C0'
+                ];
+                
+                if (municipalityPieChart) municipalityPieChart.destroy();
+                
+                municipalityPieChart = new Chart(document.getElementById('municipalityPieChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: backgroundColors.slice(0, labels.length),
+                            hoverBackgroundColor: backgroundColors.slice(0, labels.length)
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                            },
+                            title: {
+                                display: true,
+                                text: 'Распределение обращений по муниципалитетам'
+                            }
+                        }
+                    }
+                });
+                
+                showContent('municipalityPieChart');
+                
+            } catch (error) {
+                console.error('Ошибка обновления круговой диаграммы муниципалитетов:', error);
+                showError('municipalityPieChart', 'Ошибка построения графика');
+            }
+        }
+
+        function updateMunicipalityHeatmap(typeStats) {
+            if (!typeStats || typeStats.length === 0) {
+                showEmpty('municipalityHeatmap');
+                return;
+            }
+            
+            try {
+                // Группируем данные для тепловой карты
+                const municipalities = [...new Set(typeStats.map(s => s.municipality))].filter(m => m !== 'Не указан');
+                const appealTypes = [...new Set(typeStats.map(s => s.appeal_type))].filter(t => t !== 'Не определен');
+                
+                if (municipalities.length === 0 || appealTypes.length === 0) {
+                    showEmpty('municipalityHeatmap');
+                    return;
+                }
+                
+                // Создаем матрицу данных
+                const dataMatrix = {};
+                municipalities.forEach(mun => {
+                    dataMatrix[mun] = {};
+                    appealTypes.forEach(type => {
+                        dataMatrix[mun][type] = 0;
+                    });
+                });
+                
+                // Заполняем матрицу
+                typeStats.forEach(stat => {
+                    if (stat.municipality !== 'Не указан' && stat.appeal_type !== 'Не определен') {
+                        dataMatrix[stat.municipality][stat.appeal_type] = stat.type_count;
+                    }
+                });
+                
+                // Создаем HTML для тепловой карты
+                let html = '<table style="width: 100%; border-collapse: collapse;">';
+                
+                // Заголовок с типами обращений
+                html += '<tr><th class="heatmap-header">Муниципалитет / Тип обращения</th>';
+                appealTypes.forEach(type => {
+                    html += `<th class="heatmap-header">${type}</th>`;
+                });
+                html += '</tr>';
+                
+                // Данные по муниципалитетам
+                municipalities.forEach(municipality => {
+                    html += `<tr><td class="heatmap-header">${municipality}</td>`;
+                    appealTypes.forEach(type => {
+                        const count = dataMatrix[municipality][type];
+                        // Определяем цвет ячейки в зависимости от количества
+                        let color = '#ffffff';
+                        if (count > 0) {
+                            const intensity = Math.min(count / 10, 1); // Максимальная интенсивность при 10+ обращениях
+                            color = `rgba(255, 99, 132, ${0.3 + intensity * 0.7})`;
+                        }
+                        html += `<td class="heatmap-cell" style="background-color: ${color}">${count}</td>`;
+                    });
+                    html += '</tr>';
+                });
+                
+                html += '</table>';
+                
+                document.getElementById('municipalityHeatmap').innerHTML = html;
+                showContent('municipalityHeatmap');
+                
+            } catch (error) {
+                console.error('Ошибка обновления тепловой карты:', error);
+                showError('municipalityHeatmap', 'Ошибка построения тепловой карты');
+            }
+        }
+
         function updateAppealsTable(appeals) {
             if (!appeals || appeals.length === 0) {
                 showEmpty('appealsTable');
@@ -280,12 +559,13 @@
             
             try {
                 const table = document.getElementById('appealsTable');
-                let html = '<table><tr><th>ID</th><th>Тип</th><th>Текст</th><th>Статус</th><th>Дата</th></tr>';
+                let html = '<table><tr><th>ID</th><th>Тип</th><th>Текст</th><th>Статус</th><th>Муниципалитет</th><th>Дата</th></tr>';
                 
                 appeals.forEach(appeal => {
                     const appealType = appeal.type || 'не определен';
                     const appealText = appeal.text ? appeal.text.substring(0, 100) + '...' : '';
                     const appealStatus = appeal.status || 'не определен';
+                    const appealMunicipality = appeal.district || 'не указан';
                     const appealDate = appeal.created_at ? new Date(appeal.created_at).toLocaleDateString() : 'не указана';
                     
                     html += `<tr>
@@ -293,6 +573,7 @@
                         <td>${appealType}</td>
                         <td>${appealText}</td>
                         <td>${appealStatus}</td>
+                        <td>${appealMunicipality}</td>
                         <td>${appealDate}</td>
                     </tr>`;
                 });

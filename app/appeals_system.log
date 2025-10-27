@@ -11666,3 +11666,282 @@ AttributeError: 'NoneType' object has no attribute 'from_user'
 2025-10-27 17:18:49,226 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
 2025-10-27 17:18:49,229 - telegram.ext.Application - INFO - Application is stopping. This might take a moment.
 2025-10-27 17:18:49,229 - telegram.ext.Application - INFO - Application.stop() complete
+2025-10-27 17:24:04,796 - database.database_manager - INFO - ✅ Успешное подключение к MySQL
+2025-10-27 17:24:04,839 - database.database_manager - INFO - ✅ Таблицы созданы успешно
+2025-10-27 17:24:04,840 - processing.data_parser - INFO - 🚀 Запуск парсера таблицы населенных пунктов Тамбовской области...
+2025-10-27 17:24:04,868 - processing.data_parser - INFO - ✅ Таблица settlements создана успешно с колонками: id, name, type, population, district
+2025-10-27 17:24:04,869 - processing.data_parser - INFO - 🔍 Загрузка страницы: https://geoadm.com/naselennye-punkty-tambovskoy-oblasti.html
+2025-10-27 17:24:08,424 - processing.data_parser - INFO - ✅ Найден целевой заголовок таблицы
+2025-10-27 17:24:08,425 - processing.data_parser - INFO - ✅ Найдена таблица методом find_next_sibling
+2025-10-27 17:24:08,425 - processing.data_parser - INFO - ✅ Таблица найдена, начинаем парсинг...
+2025-10-27 17:24:08,450 - processing.data_parser - INFO - 📋 Найдено строк в таблице: 1600
+2025-10-27 17:24:08,451 - processing.data_parser - INFO - 📝 Заголовки таблицы: ['', 'Название', 'Тип', 'Население', 'Округ/район']
+2025-10-27 17:24:08,452 - processing.data_parser - INFO - 🔍 Определены индексы колонок: название=1, тип=2, население=3, район=4
+2025-10-27 17:24:08,453 - processing.data_parser - INFO - 📝 Пример данных: {'name': 'Тамбов', 'type': 'город', 'population': 292140, 'district': 'Городской округ город Тамбов'}
+2025-10-27 17:24:08,453 - processing.data_parser - INFO - 📝 Пример данных: {'name': 'Мичуринск', 'type': 'город', 'population': 90722, 'district': 'Городской округ город Мичуринск'}
+2025-10-27 17:24:08,454 - processing.data_parser - INFO - 📝 Пример данных: {'name': 'Рассказово', 'type': 'город', 'population': 42679, 'district': 'Городской округ город Рассказово'}
+2025-10-27 17:24:08,454 - processing.data_parser - INFO - 📝 Пример данных: {'name': 'Моршанск', 'type': 'город', 'population': 37955, 'district': 'Городской округ город Моршанск'}
+2025-10-27 17:24:08,455 - processing.data_parser - INFO - 📝 Пример данных: {'name': 'Котовск', 'type': 'город', 'population': 28955, 'district': 'Городской округ город Котовск'}
+2025-10-27 17:24:08,709 - processing.data_parser - INFO - 🎯 Всего найдено населенных пунктов: 1599
+2025-10-27 17:24:09,296 - processing.data_parser - INFO - 💾 Успешно сохранено 1599 населенных пунктов
+2025-10-27 17:24:09,297 - processing.data_parser - INFO - 📊 Статистика сохраненных данных:
+2025-10-27 17:24:09,298 - processing.data_parser - INFO -    Всего записей: 1599
+2025-10-27 17:24:09,298 - processing.data_parser - INFO -    С указанием населения: 1521 (95.1%)
+2025-10-27 17:24:09,298 - processing.data_parser - INFO -    С указанием района: 1599 (100.0%)
+2025-10-27 17:24:09,298 - processing.data_parser - INFO - 🔍 Примеры сохраненных записей:
+2025-10-27 17:24:09,299 - processing.data_parser - INFO -    1. город Тамбов, население: 292140, район: Городской округ город Тамбов
+2025-10-27 17:24:09,299 - processing.data_parser - INFO -    2. город Мичуринск, население: 90722, район: Городской округ город Мичуринск
+2025-10-27 17:24:09,299 - processing.data_parser - INFO -    3. город Рассказово, население: 42679, район: Городской округ город Рассказово
+2025-10-27 17:24:09,299 - processing.data_parser - INFO -    4. город Моршанск, население: 37955, район: Городской округ город Моршанск
+2025-10-27 17:24:09,300 - processing.data_parser - INFO -    5. город Котовск, население: 28955, район: Городской округ город Котовск
+2025-10-27 17:24:09,300 - processing.data_parser - INFO - ✅ Данные успешно загружены: 1599 записей
+2025-10-27 17:24:09,301 - __main__ - INFO - ✅ База данных населенных пунктов инициализирована
+2025-10-27 17:24:09,301 - __main__ - INFO - ✅ Система обработки обращений инициализирована
+2025-10-27 17:24:09,329 - __main__ - INFO - ✅ Все компоненты системы запущены
+2025-10-27 17:24:14,357 - gigachat.api_client - INFO - ✅ GigaChatClient инициализирован
+2025-10-27 17:24:14,359 - gigachat.api_client - INFO - ✅ GigaChatClient инициализирован
+2025-10-27 17:24:14,366 - gigachat.api_client - INFO - ✅ GigaChatClient инициализирован
+2025-10-27 17:24:14,436 - database.database_manager - INFO - ✅ Успешное подключение к MySQL
+2025-10-27 17:24:14,438 - database.database_manager - INFO - ✅ Успешное подключение к MySQL
+2025-10-27 17:24:14,443 - database.database_manager - INFO - ✅ Успешное подключение к MySQL
+2025-10-27 17:24:14,671 - database.database_manager - INFO - ✅ Таблицы созданы успешно
+2025-10-27 17:24:14,672 - processing.analyzer - INFO - ✅ Загружены данные по 30 муниципальным образованиям из settlements.data.json
+2025-10-27 17:24:14,673 - __mp_main__ - INFO - 🚀 Запуск бота для аналитиков...
+2025-10-27 17:24:14,682 - database.database_manager - INFO - ✅ Таблицы созданы успешно
+2025-10-27 17:24:14,683 - processing.analyzer - INFO - ✅ Загружены данные по 30 муниципальным образованиям из settlements.data.json
+2025-10-27 17:24:14,687 - __mp_main__ - INFO - 🚀 Запуск бота для граждан...
+2025-10-27 17:24:14,694 - database.database_manager - INFO - ✅ Таблицы созданы успешно
+2025-10-27 17:24:14,698 - processing.analyzer - INFO - ✅ Загружены данные по 30 муниципальным образованиям из settlements.data.json
+2025-10-27 17:24:14,707 - __mp_main__ - INFO - 🚀 Запуск веб-интерфейса на порту 5000...
+2025-10-27 17:24:14,746 - bot.analyst_bot - INFO - 🤖 Бот для аналитиков запущен...
+2025-10-27 17:24:14,756 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.165:5000
+2025-10-27 17:24:14,757 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-27 17:24:14,776 - bot.citizen_bot - INFO - 🤖 Бот для граждан запущен...
+2025-10-27 17:24:14,958 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getMe "HTTP/1.1 200 OK"
+2025-10-27 17:24:14,970 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getMe "HTTP/1.1 200 OK"
+2025-10-27 17:24:14,971 - web.dashboard - INFO - 📊 Запрос статистики за 30 дней
+2025-10-27 17:24:14,974 - web.dashboard - INFO - 📊 Возвращаем статистику: 5 записей
+2025-10-27 17:24:14,976 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:24:14] "GET /api/stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:24:14,982 - web.dashboard - INFO - 📈 Запрос трендов за 30 дней
+2025-10-27 17:24:14,986 - processing.analyzer - INFO - 📈 Анализ трендов: получено 10 обращений за 30 дней
+2025-10-27 17:24:14,986 - gigachat.api_client - INFO - 🔐 Попытка аутентификации 1/3...
+2025-10-27 17:24:15,015 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/deleteWebhook "HTTP/1.1 200 OK"
+2025-10-27 17:24:15,017 - telegram.ext.Application - INFO - Application started
+2025-10-27 17:24:15,029 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/deleteWebhook "HTTP/1.1 200 OK"
+2025-10-27 17:24:15,032 - telegram.ext.Application - INFO - Application started
+2025-10-27 17:24:15,092 - gigachat.api_client - INFO - 📊 Статус ответа аутентификации: 200
+2025-10-27 17:24:15,093 - gigachat.api_client - INFO - ✅ Успешная аутентификация в GigaChat
+2025-10-27 17:24:15,095 - gigachat.api_client - INFO - 💬 Попытка чат-запроса 1/3
+2025-10-27 17:24:16,364 - gigachat.api_client - INFO - 📊 Статус ответа чата: 200
+2025-10-27 17:24:16,408 - gigachat.api_client - INFO - ✅ Успешно получен ответ от GigaChat
+2025-10-27 17:24:16,414 - processing.analyzer - INFO - ✅ Успешно извлечены темы: 10
+2025-10-27 17:24:16,422 - processing.analyzer - INFO - 📊 Проанализированы актуальные тренды за 30 дней
+2025-10-27 17:24:16,459 - web.dashboard - INFO - 📈 Возвращаем тренды: 10 обращений
+2025-10-27 17:24:16,461 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:24:16] "GET /api/trends?period=30 HTTP/1.1" 200 -
+2025-10-27 17:24:16,471 - web.dashboard - INFO - 📝 Запрос обращений (страница 1, лимит 10)
+2025-10-27 17:24:16,478 - web.dashboard - INFO - 📝 Возвращаем обращения: 10 записей
+2025-10-27 17:24:16,490 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:24:16] "GET /api/appeals?limit=10 HTTP/1.1" 200 -
+2025-10-27 17:24:20,296 - web.dashboard - INFO - 🌐 Запрос главной страницы дашборда
+2025-10-27 17:24:20,383 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:24:20] "GET / HTTP/1.1" 200 -
+2025-10-27 17:24:20,462 - web.dashboard - INFO - 📊 Запрос статистики за 30 дней
+2025-10-27 17:24:20,465 - web.dashboard - INFO - 📊 Возвращаем статистику: 5 записей
+2025-10-27 17:24:20,474 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:24:20] "GET /api/stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:24:20,525 - web.dashboard - INFO - 📈 Запрос трендов за 30 дней
+2025-10-27 17:24:20,528 - processing.analyzer - INFO - 📈 Анализ трендов: получено 10 обращений за 30 дней
+2025-10-27 17:24:20,529 - gigachat.api_client - INFO - 💬 Попытка чат-запроса 1/3
+2025-10-27 17:24:21,735 - gigachat.api_client - INFO - 📊 Статус ответа чата: 200
+2025-10-27 17:24:21,735 - gigachat.api_client - INFO - ✅ Успешно получен ответ от GigaChat
+2025-10-27 17:24:21,735 - processing.analyzer - INFO - ✅ Успешно извлечены темы: 9
+2025-10-27 17:24:21,735 - processing.analyzer - INFO - 📊 Проанализированы актуальные тренды за 30 дней
+2025-10-27 17:24:21,735 - web.dashboard - INFO - 📈 Возвращаем тренды: 10 обращений
+2025-10-27 17:24:21,735 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:24:21] "GET /api/trends?period=30 HTTP/1.1" 200 -
+2025-10-27 17:24:21,763 - web.dashboard - INFO - 🏛️ Запрос статистики по муниципалитетам за 30 дней
+2025-10-27 17:24:21,766 - database.database_manager - INFO - 🏛️ Получена статистика по 8 муниципалитетам
+2025-10-27 17:24:21,766 - web.dashboard - INFO - 🏛️ Возвращаем статистику по 8 муниципалитетам
+2025-10-27 17:24:21,770 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:24:21] "GET /api/municipality_stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:24:21,780 - web.dashboard - INFO - 🏛️ Запрос статистики по типам обращений за 30 дней
+2025-10-27 17:24:21,782 - web.dashboard - INFO - 🏛️ Возвращаем статистику по типам: 10 записей
+2025-10-27 17:24:21,784 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:24:21] "GET /api/municipality_type_stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:24:21,791 - web.dashboard - INFO - 📝 Запрос обращений (страница 1, лимит 10)
+2025-10-27 17:24:21,791 - web.dashboard - INFO - 📝 Возвращаем обращения: 10 записей
+2025-10-27 17:24:21,791 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:24:21] "GET /api/appeals?limit=10 HTTP/1.1" 200 -
+2025-10-27 17:24:25,192 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:24:25,206 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:24:35,258 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:24:35,269 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:24:45,316 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:24:45,326 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:24:50,466 - web.dashboard - INFO - 📊 Запрос статистики за 30 дней
+2025-10-27 17:24:50,468 - web.dashboard - INFO - 📊 Возвращаем статистику: 5 записей
+2025-10-27 17:24:50,469 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:24:50] "GET /api/stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:24:50,501 - web.dashboard - INFO - 📈 Запрос трендов за 30 дней
+2025-10-27 17:24:50,504 - processing.analyzer - INFO - 📈 Анализ трендов: получено 10 обращений за 30 дней
+2025-10-27 17:24:50,505 - gigachat.api_client - INFO - 💬 Попытка чат-запроса 1/3
+2025-10-27 17:24:51,924 - gigachat.api_client - INFO - 📊 Статус ответа чата: 200
+2025-10-27 17:24:51,924 - gigachat.api_client - INFO - ✅ Успешно получен ответ от GigaChat
+2025-10-27 17:24:51,924 - processing.analyzer - INFO - ✅ Успешно извлечены темы: 9
+2025-10-27 17:24:51,924 - processing.analyzer - INFO - 📊 Проанализированы актуальные тренды за 30 дней
+2025-10-27 17:24:51,924 - web.dashboard - INFO - 📈 Возвращаем тренды: 10 обращений
+2025-10-27 17:24:51,924 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:24:51] "GET /api/trends?period=30 HTTP/1.1" 200 -
+2025-10-27 17:24:51,924 - web.dashboard - INFO - 🏛️ Запрос статистики по муниципалитетам за 30 дней
+2025-10-27 17:24:51,938 - database.database_manager - INFO - 🏛️ Получена статистика по 8 муниципалитетам
+2025-10-27 17:24:51,939 - web.dashboard - INFO - 🏛️ Возвращаем статистику по 8 муниципалитетам
+2025-10-27 17:24:51,939 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:24:51] "GET /api/municipality_stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:24:51,941 - web.dashboard - INFO - 🏛️ Запрос статистики по типам обращений за 30 дней
+2025-10-27 17:24:51,941 - web.dashboard - INFO - 🏛️ Возвращаем статистику по типам: 10 записей
+2025-10-27 17:24:51,941 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:24:51] "GET /api/municipality_type_stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:24:51,952 - web.dashboard - INFO - 📝 Запрос обращений (страница 1, лимит 10)
+2025-10-27 17:24:51,955 - web.dashboard - INFO - 📝 Возвращаем обращения: 10 записей
+2025-10-27 17:24:51,956 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:24:51] "GET /api/appeals?limit=10 HTTP/1.1" 200 -
+2025-10-27 17:24:55,371 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:24:55,371 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:25:05,426 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:25:05,441 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:25:15,502 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:25:15,510 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:25:20,474 - web.dashboard - INFO - 📊 Запрос статистики за 30 дней
+2025-10-27 17:25:20,477 - web.dashboard - INFO - 📊 Возвращаем статистику: 5 записей
+2025-10-27 17:25:20,477 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:25:20] "GET /api/stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:25:20,484 - web.dashboard - INFO - 📈 Запрос трендов за 30 дней
+2025-10-27 17:25:20,487 - processing.analyzer - INFO - 📈 Анализ трендов: получено 10 обращений за 30 дней
+2025-10-27 17:25:20,488 - gigachat.api_client - INFO - 💬 Попытка чат-запроса 1/3
+2025-10-27 17:25:21,879 - gigachat.api_client - INFO - 📊 Статус ответа чата: 200
+2025-10-27 17:25:21,880 - gigachat.api_client - INFO - ✅ Успешно получен ответ от GigaChat
+2025-10-27 17:25:21,881 - processing.analyzer - INFO - ✅ Успешно извлечены темы: 10
+2025-10-27 17:25:21,882 - processing.analyzer - INFO - 📊 Проанализированы актуальные тренды за 30 дней
+2025-10-27 17:25:21,882 - web.dashboard - INFO - 📈 Возвращаем тренды: 10 обращений
+2025-10-27 17:25:21,883 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:25:21] "GET /api/trends?period=30 HTTP/1.1" 200 -
+2025-10-27 17:25:21,888 - web.dashboard - INFO - 🏛️ Запрос статистики по муниципалитетам за 30 дней
+2025-10-27 17:25:21,890 - database.database_manager - INFO - 🏛️ Получена статистика по 8 муниципалитетам
+2025-10-27 17:25:21,891 - web.dashboard - INFO - 🏛️ Возвращаем статистику по 8 муниципалитетам
+2025-10-27 17:25:21,892 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:25:21] "GET /api/municipality_stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:25:21,897 - web.dashboard - INFO - 🏛️ Запрос статистики по типам обращений за 30 дней
+2025-10-27 17:25:21,899 - web.dashboard - INFO - 🏛️ Возвращаем статистику по типам: 10 записей
+2025-10-27 17:25:21,900 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:25:21] "GET /api/municipality_type_stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:25:21,906 - web.dashboard - INFO - 📝 Запрос обращений (страница 1, лимит 10)
+2025-10-27 17:25:21,908 - web.dashboard - INFO - 📝 Возвращаем обращения: 10 записей
+2025-10-27 17:25:21,909 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:25:21] "GET /api/appeals?limit=10 HTTP/1.1" 200 -
+2025-10-27 17:25:25,550 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:25:25,570 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:25:35,612 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:25:35,631 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:25:45,681 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:25:45,681 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:25:50,461 - web.dashboard - INFO - 📊 Запрос статистики за 30 дней
+2025-10-27 17:25:50,464 - web.dashboard - INFO - 📊 Возвращаем статистику: 5 записей
+2025-10-27 17:25:50,464 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:25:50] "GET /api/stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:25:50,471 - web.dashboard - INFO - 📈 Запрос трендов за 30 дней
+2025-10-27 17:25:50,474 - processing.analyzer - INFO - 📈 Анализ трендов: получено 10 обращений за 30 дней
+2025-10-27 17:25:50,475 - gigachat.api_client - INFO - 💬 Попытка чат-запроса 1/3
+2025-10-27 17:25:51,789 - gigachat.api_client - INFO - 📊 Статус ответа чата: 200
+2025-10-27 17:25:51,789 - gigachat.api_client - INFO - ✅ Успешно получен ответ от GigaChat
+2025-10-27 17:25:51,789 - processing.analyzer - INFO - ✅ Успешно извлечены темы: 10
+2025-10-27 17:25:51,789 - processing.analyzer - INFO - 📊 Проанализированы актуальные тренды за 30 дней
+2025-10-27 17:25:51,789 - web.dashboard - INFO - 📈 Возвращаем тренды: 10 обращений
+2025-10-27 17:25:51,789 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:25:51] "GET /api/trends?period=30 HTTP/1.1" 200 -
+2025-10-27 17:25:51,804 - web.dashboard - INFO - 🏛️ Запрос статистики по муниципалитетам за 30 дней
+2025-10-27 17:25:51,808 - database.database_manager - INFO - 🏛️ Получена статистика по 8 муниципалитетам
+2025-10-27 17:25:51,808 - web.dashboard - INFO - 🏛️ Возвращаем статистику по 8 муниципалитетам
+2025-10-27 17:25:51,809 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:25:51] "GET /api/municipality_stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:25:51,809 - web.dashboard - INFO - 🏛️ Запрос статистики по типам обращений за 30 дней
+2025-10-27 17:25:51,809 - web.dashboard - INFO - 🏛️ Возвращаем статистику по типам: 10 записей
+2025-10-27 17:25:51,809 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:25:51] "GET /api/municipality_type_stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:25:51,824 - web.dashboard - INFO - 📝 Запрос обращений (страница 1, лимит 10)
+2025-10-27 17:25:51,824 - web.dashboard - INFO - 📝 Возвращаем обращения: 10 записей
+2025-10-27 17:25:51,824 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:25:51] "GET /api/appeals?limit=10 HTTP/1.1" 200 -
+2025-10-27 17:25:55,737 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:25:55,737 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:26:05,786 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:26:05,801 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:26:15,863 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:26:15,870 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:26:20,467 - web.dashboard - INFO - 📊 Запрос статистики за 30 дней
+2025-10-27 17:26:20,470 - web.dashboard - INFO - 📊 Возвращаем статистику: 5 записей
+2025-10-27 17:26:20,471 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:26:20] "GET /api/stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:26:20,500 - web.dashboard - INFO - 📈 Запрос трендов за 30 дней
+2025-10-27 17:26:20,503 - processing.analyzer - INFO - 📈 Анализ трендов: получено 10 обращений за 30 дней
+2025-10-27 17:26:20,505 - gigachat.api_client - INFO - 💬 Попытка чат-запроса 1/3
+2025-10-27 17:26:21,531 - gigachat.api_client - INFO - 📊 Статус ответа чата: 200
+2025-10-27 17:26:21,531 - gigachat.api_client - INFO - ✅ Успешно получен ответ от GigaChat
+2025-10-27 17:26:21,533 - processing.analyzer - INFO - ✅ Успешно извлечены темы: 9
+2025-10-27 17:26:21,534 - processing.analyzer - INFO - 📊 Проанализированы актуальные тренды за 30 дней
+2025-10-27 17:26:21,534 - web.dashboard - INFO - 📈 Возвращаем тренды: 10 обращений
+2025-10-27 17:26:21,535 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:26:21] "GET /api/trends?period=30 HTTP/1.1" 200 -
+2025-10-27 17:26:21,541 - web.dashboard - INFO - 🏛️ Запрос статистики по муниципалитетам за 30 дней
+2025-10-27 17:26:21,543 - database.database_manager - INFO - 🏛️ Получена статистика по 8 муниципалитетам
+2025-10-27 17:26:21,543 - web.dashboard - INFO - 🏛️ Возвращаем статистику по 8 муниципалитетам
+2025-10-27 17:26:21,544 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:26:21] "GET /api/municipality_stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:26:21,554 - web.dashboard - INFO - 🏛️ Запрос статистики по типам обращений за 30 дней
+2025-10-27 17:26:21,555 - web.dashboard - INFO - 🏛️ Возвращаем статистику по типам: 10 записей
+2025-10-27 17:26:21,556 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:26:21] "GET /api/municipality_type_stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:26:21,562 - web.dashboard - INFO - 📝 Запрос обращений (страница 1, лимит 10)
+2025-10-27 17:26:21,564 - web.dashboard - INFO - 📝 Возвращаем обращения: 10 записей
+2025-10-27 17:26:21,565 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:26:21] "GET /api/appeals?limit=10 HTTP/1.1" 200 -
+2025-10-27 17:26:25,922 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:26:25,929 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:26:35,986 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:26:35,986 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:26:46,037 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:26:46,037 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:26:50,473 - web.dashboard - INFO - 📊 Запрос статистики за 30 дней
+2025-10-27 17:26:50,475 - web.dashboard - INFO - 📊 Возвращаем статистику: 5 записей
+2025-10-27 17:26:50,476 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:26:50] "GET /api/stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:26:50,481 - web.dashboard - INFO - 📈 Запрос трендов за 30 дней
+2025-10-27 17:26:50,484 - processing.analyzer - INFO - 📈 Анализ трендов: получено 10 обращений за 30 дней
+2025-10-27 17:26:50,484 - gigachat.api_client - INFO - 💬 Попытка чат-запроса 1/3
+2025-10-27 17:26:51,777 - gigachat.api_client - INFO - 📊 Статус ответа чата: 200
+2025-10-27 17:26:51,792 - gigachat.api_client - INFO - ✅ Успешно получен ответ от GigaChat
+2025-10-27 17:26:51,792 - processing.analyzer - INFO - ✅ Успешно извлечены темы: 10
+2025-10-27 17:26:51,792 - processing.analyzer - INFO - 📊 Проанализированы актуальные тренды за 30 дней
+2025-10-27 17:26:51,792 - web.dashboard - INFO - 📈 Возвращаем тренды: 10 обращений
+2025-10-27 17:26:51,792 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:26:51] "GET /api/trends?period=30 HTTP/1.1" 200 -
+2025-10-27 17:26:51,792 - web.dashboard - INFO - 🏛️ Запрос статистики по муниципалитетам за 30 дней
+2025-10-27 17:26:51,792 - database.database_manager - INFO - 🏛️ Получена статистика по 8 муниципалитетам
+2025-10-27 17:26:51,792 - web.dashboard - INFO - 🏛️ Возвращаем статистику по 8 муниципалитетам
+2025-10-27 17:26:51,792 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:26:51] "GET /api/municipality_stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:26:51,808 - web.dashboard - INFO - 🏛️ Запрос статистики по типам обращений за 30 дней
+2025-10-27 17:26:51,808 - web.dashboard - INFO - 🏛️ Возвращаем статистику по типам: 10 записей
+2025-10-27 17:26:51,808 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:26:51] "GET /api/municipality_type_stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:26:51,808 - web.dashboard - INFO - 📝 Запрос обращений (страница 1, лимит 10)
+2025-10-27 17:26:51,808 - web.dashboard - INFO - 📝 Возвращаем обращения: 10 записей
+2025-10-27 17:26:51,821 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:26:51] "GET /api/appeals?limit=10 HTTP/1.1" 200 -
+2025-10-27 17:26:56,106 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:26:56,106 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:27:06,156 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:27:06,174 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:27:16,219 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:27:16,219 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:27:20,466 - web.dashboard - INFO - 📊 Запрос статистики за 30 дней
+2025-10-27 17:27:20,469 - web.dashboard - INFO - 📊 Возвращаем статистику: 5 записей
+2025-10-27 17:27:20,470 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:27:20] "GET /api/stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:27:20,492 - web.dashboard - INFO - 📈 Запрос трендов за 30 дней
+2025-10-27 17:27:20,495 - processing.analyzer - INFO - 📈 Анализ трендов: получено 10 обращений за 30 дней
+2025-10-27 17:27:20,495 - gigachat.api_client - INFO - 💬 Попытка чат-запроса 1/3
+2025-10-27 17:27:21,666 - gigachat.api_client - INFO - 📊 Статус ответа чата: 200
+2025-10-27 17:27:21,667 - gigachat.api_client - INFO - ✅ Успешно получен ответ от GigaChat
+2025-10-27 17:27:21,669 - processing.analyzer - INFO - ✅ Успешно извлечены темы: 9
+2025-10-27 17:27:21,669 - processing.analyzer - INFO - 📊 Проанализированы актуальные тренды за 30 дней
+2025-10-27 17:27:21,669 - web.dashboard - INFO - 📈 Возвращаем тренды: 10 обращений
+2025-10-27 17:27:21,670 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:27:21] "GET /api/trends?period=30 HTTP/1.1" 200 -
+2025-10-27 17:27:21,675 - web.dashboard - INFO - 🏛️ Запрос статистики по муниципалитетам за 30 дней
+2025-10-27 17:27:21,678 - database.database_manager - INFO - 🏛️ Получена статистика по 8 муниципалитетам
+2025-10-27 17:27:21,678 - web.dashboard - INFO - 🏛️ Возвращаем статистику по 8 муниципалитетам
+2025-10-27 17:27:21,679 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:27:21] "GET /api/municipality_stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:27:21,685 - web.dashboard - INFO - 🏛️ Запрос статистики по типам обращений за 30 дней
+2025-10-27 17:27:21,687 - web.dashboard - INFO - 🏛️ Возвращаем статистику по типам: 10 записей
+2025-10-27 17:27:21,688 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:27:21] "GET /api/municipality_type_stats?period=30 HTTP/1.1" 200 -
+2025-10-27 17:27:21,697 - web.dashboard - INFO - 📝 Запрос обращений (страница 1, лимит 10)
+2025-10-27 17:27:21,699 - web.dashboard - INFO - 📝 Возвращаем обращения: 10 записей
+2025-10-27 17:27:21,700 - werkzeug - INFO - 127.0.0.1 - - [27/Oct/2025 17:27:21] "GET /api/appeals?limit=10 HTTP/1.1" 200 -
+2025-10-27 17:27:26,277 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:27:26,277 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:27:32,606 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8471304408:AAFAyuh1JBL-M_PYySLLbS7zJB_5j64EA6c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:27:32,606 - telegram.ext.Application - INFO - Application is stopping. This might take a moment.
+2025-10-27 17:27:32,606 - telegram.ext.Application - INFO - Application.stop() complete
+2025-10-27 17:27:32,606 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8408324014:AAG_LBXM7L4qIhymvcfsAecicf_EL8XFn5c/getUpdates "HTTP/1.1 200 OK"
+2025-10-27 17:27:32,622 - telegram.ext.Application - INFO - Application is stopping. This might take a moment.
+2025-10-27 17:27:32,622 - telegram.ext.Application - INFO - Application.stop() complete
+2025-10-27 17:27:32,972 - database.database_manager - INFO - 🔌 Соединение с MySQL закрыто
