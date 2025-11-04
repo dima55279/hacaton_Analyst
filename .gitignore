@@ -2,3 +2,5 @@
 /shelf/
 /workspace.xml
 app/config.json
+.pyc
+.log
