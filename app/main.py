@@ -147,6 +147,8 @@ def main():
         analyst_process = multiprocessing.Process(target=run_analyst_bot, args=(config,))
         processes.append(analyst_process)
         
+        logger.info("✅ База знаний загружена и готова к использованию")
+        
         # Процесс для веб-интерфейса
         dashboard_process = multiprocessing.Process(target=run_dashboard, args=(config,))
         processes.append(dashboard_process)

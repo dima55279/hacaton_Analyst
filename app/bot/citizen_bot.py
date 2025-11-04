@@ -1,9 +1,10 @@
-from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
+from telegram import Update, ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler, CallbackQueryHandler
 import logging
 import asyncio
 import mysql.connector
 from enum import Enum
+from bot.knowledge_base import knowledge_base
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,7 @@ class CitizenBot:
         self.system = appeals_system
         self.application = None
         self.db_config = db_config
+        self.knowledge_base = knowledge_base
         
     def get_settlements_db(self):
         """Подключение к базе данных населенных пунктов"""
@@ -37,12 +39,16 @@ class CitizenBot:
 • Подать жалобу или предложение
 • Получить информацию по вопросам ЖКХ, благоустройства, транспорта
 • Отправить запрос в органы власти
+• Найти ответы на частые вопросы
 
 Для подачи обращения нажмите "Подать обращение" и следуйте инструкциям.
 
 Для справки используйте /help
 """
-        keyboard = [['Подать обращение', 'Мои обращения']]
+        keyboard = [
+            ['📝 Подать обращение', '📋 Мои обращения'],
+            ['📚 База знаний', 'ℹ️ Помощь']
+        ]
         reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
         
         await update.message.reply_text(welcome_text, reply_markup=reply_markup)
@@ -54,23 +60,23 @@ class CitizenBot:
         context.user_data.clear()
         
         instruction_text = """
-    🏠 Для обработки вашего обращения нам нужен адрес.
+🏠 Для обработки вашего обращения нам нужен адрес.
 
-    Пожалуйста, введите название вашего населенного пункта в Тамбовской области (город, село, деревня):
+Пожалуйста, введите название вашего населенного пункта в Тамбовской области (город, село, деревня):
 
-    📝 Примеры: 
-    • Тамбов
-    • Мичуринск  
-    • Котовск
-    • Рассказово
-    • село Тулиновка
-    • деревня Красносвободное
-    """
+📝 Примеры: 
+• Тамбов
+• Мичуринск  
+• Котовск
+• Рассказово
+• Тулиновка
+• Красносвободное
+"""
         await update.message.reply_text(instruction_text, reply_markup=ReplyKeyboardRemove())
         return AddressStates.WAITING_FOR_SETTLEMENT
 
     async def handle_settlement(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Обработка ввода населенного пункта с исправленной логикой"""
+        """Обработка ввода населенного пункта"""
         user_input = update.message.text.strip()
         
         # Проверяем, не является ли это выбором из предложенных вариантов
@@ -195,26 +201,26 @@ class CitizenBot:
             else:
                 # НАСЕЛЕННЫЙ ПУНКТ НЕ НАЙДЕН - НЕ ПРОДОЛЖАЕМ ПРОЦЕСС
                 error_message = f"""
-    ❌ Населенный пункт '{settlement_name}' не найден в базе данных.
+❌ Населенный пункт '{settlement_name}' не найден в базе данных.
 
-    Возможные причины:
-    • Проверьте правильность написания названия
-    • Используйте полное официальное название
-    • Убедитесь, что населенный пункт находится в Тамбовской области
+Возможные причины:
+• Проверьте правильность написания названия
+• Используйте полное официальное название
+• Убедитесь, что населенный пункт находится в Тамбовской области
 
-    Пожалуйста, введите корректное название населенного пункта еще раз:
-    """
+Пожалуйста, введите корректное название населенного пункта еще раз:
+"""
                 await update.message.reply_text(error_message)
                 # Остаемся в том же состоянии для повторного ввода
                 return AddressStates.WAITING_FOR_SETTLEMENT
                 
         except Exception as e:
             logger.error(f"Ошибка поиска населенного пункта: {e}")
-            error_message = f"""
-    ⚠️ Произошла ошибка при поиске населенного пункта.
+            error_message = """
+⚠️ Произошла ошибка при поиске населенного пункта.
 
-    Пожалуйста, введите название населенного пункта еще раз:
-    """
+Пожалуйста, введите название населенного пункта еще раз:
+"""
             await update.message.reply_text(error_message)
             return AddressStates.WAITING_FOR_SETTLEMENT
 
@@ -289,7 +295,10 @@ class CitizenBot:
             )
             
             # Показываем клавиатуру с основными командами
-            keyboard = [['Подать обращение', 'Мои обращения']]
+            keyboard = [
+                ['📝 Подать обращение', '📋 Мои обращения'],
+                ['📚 База знаний', 'ℹ️ Помощь']
+            ]
             reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
             
             await update.message.reply_text(response, reply_markup=reply_markup)
@@ -298,7 +307,13 @@ class CitizenBot:
         except Exception as e:
             logger.error(f"Ошибка обработки обращения: {e}")
             error_message = "Извините, произошла ошибка при обработке обращения. Пожалуйста, попробуйте позже."
-            await update.message.reply_text(error_message)
+            
+            keyboard = [
+                ['📝 Подать обращение', '📋 Мои обращения'],
+                ['📚 База знаний', 'ℹ️ Помощь']
+            ]
+            reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+            await update.message.reply_text(error_message, reply_markup=reply_markup)
         
         # Очищаем данные адреса
         if 'address_info' in context.user_data:
@@ -308,33 +323,213 @@ class CitizenBot:
 
     async def cancel_address(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Отмена процесса ввода адреса"""
-        await update.message.reply_text(
-            "Ввод адреса отменен.",
-            reply_markup=ReplyKeyboardMarkup([['Подать обращение', 'Мои обращения']], resize_keyboard=True)
-        )
         context.user_data.clear()
+        
+        cancel_message = """
+❌ Ввод адреса отменен.
+
+Вы можете начать заново, нажав «Подать обращение».
+
+Если у вас возникли проблемы с определением населенного пункта, убедитесь что:
+• Вы вводите официальное название
+• Населенный пункт находится в Тамбовской области
+• Используете правильные сокращения (с., д., г., пгт.)
+"""
+        keyboard = [
+            ['📝 Подать обращение', '📋 Мои обращения'],
+            ['📚 База знаний', 'ℹ️ Помощь']
+        ]
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        
+        await update.message.reply_text(cancel_message, reply_markup=reply_markup)
         return ConversationHandler.END
 
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Команда помощи"""
+        """Команда помощи - показывает список доступных команд"""
         help_text = """
-📋 Как пользоваться ботом:
+    🤖 *Доступные команды бота:*
 
-1. Нажмите "Подать обращение"
-2. Введите адрес по шагам:
-   - Населенный пункт
-   - Улица
-   - Номер дома
-3. Опишите ваше обращение
+    */start* - Начать работу с ботом
+    */help* - Показать эту справку
+    */knowledge* - Открыть базу знаний  
+    */search <запрос>* - Поиск в базе знаний
 
-Примеры обращений:
-• "Во дворе разбита дорога, требуется ремонт"
-• "Не работает уличное освещение"
-• "Предлагаю установить новые лавочки"
+    📋 *Основные функции (кнопки):*
 
-Ваши обращения сохраняются в системе с привязкой к адресу.
+    *📝 Подать обращение* - Создать новое обращение в органы власти
+    *📋 Мои обращения* - Просмотреть ваши предыдущие обращения
+    *📚 База знаний* - Открыть базу знаний с часто задаваемыми вопросами
+    *ℹ️ Помощь* - Показать эту справку
+
+    📍 *Процесс подачи обращения:*
+    1. Нажмите «Подать обращение»
+    2. Введите название населенного пункта
+    3. Укажите улицу и номер дома
+    4. Опишите вашу проблему или вопрос
+
+    📞 *Поддержка:*
+    Если у вас возникли технические проблемы, обратитесь в поддержку:
+    support@appeals-system.tmb.ru
+
+    🆘 *Экстренные случаи:*
+    Для экстренных ситуаций звоните:
+    • Пожарная: 101
+    • Полиция: 102  
+    • Скорая: 103
+    • Единый номер: 112
+    """
+        
+        keyboard = [
+            ['📝 Подать обращение', '📋 Мои обращения'],
+            ['📚 База знаний', 'ℹ️ Помощь']
+        ]
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        
+        await update.message.reply_text(help_text, reply_markup=reply_markup, parse_mode='Markdown')
+
+    async def knowledge_base_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Команда для открытия базы знаний"""
+        welcome_text = """
+📚 **База знаний системы обращений**
+
+Выберите интересующую вас категорию вопросов:
 """
-        await update.message.reply_text(help_text)
+        
+        keyboard = self.knowledge_base.get_categories_keyboard()
+        await update.message.reply_text(welcome_text, reply_markup=keyboard, parse_mode='Markdown')
+
+    async def handle_knowledge_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Обработчик callback'ов базы знаний"""
+        query = update.callback_query
+        await query.answer()
+        
+        callback_data = query.data
+        
+        if callback_data == "main_menu":
+            await self.show_main_menu(query)
+        elif callback_data == "back_to_categories":
+            await self.show_categories(query)
+        elif callback_data.startswith("category_"):
+            category_id = callback_data.replace("category_", "")
+            await self.show_questions(query, category_id)
+        elif callback_data.startswith("question_"):
+            question_id = callback_data.replace("question_", "")
+            await self.show_answer(query, question_id)
+        
+    async def show_main_menu(self, query):
+        """Показать главное меню с обычной клавиатурой"""
+        welcome_text = """
+    👋 Добро пожаловать в систему обращений граждан!
+
+    Я помогу вам:
+    • Подать жалобу или предложение
+    • Получить информацию по вопросам ЖКХ, благоустройства, транспорта
+    • Отправить запрос в органы власти
+    • Найти ответы на частые вопросы
+
+    Для подачи обращения нажмите "Подать обращение" и следуйте инструкциям.
+
+    Для справки используйте /help
+    """
+        keyboard = [
+            ['📝 Подать обращение', '📋 Мои обращения'],
+            ['📚 База знаний', 'ℹ️ Помощь']
+        ]
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        
+        # Удаляем инлайн-сообщение базы знаний и отправляем новое сообщение с обычной клавиатурой
+        await query.message.delete()
+        await query.message.reply_text(welcome_text, reply_markup=reply_markup)
+    
+    async def show_categories(self, query):
+        """Показать категории вопросов"""
+        welcome_text = "📚 **База знаний системы обращений**\n\nВыберите интересующую вас категорию вопросов:"
+        
+        keyboard = self.knowledge_base.get_categories_keyboard()
+        await query.edit_message_text(welcome_text, reply_markup=keyboard, parse_mode='Markdown')
+    
+    async def show_questions(self, query, category_id):
+        """Показать вопросы категории"""
+        category = self.knowledge_base.get_category_by_id(category_id)
+        if not category:
+            await query.edit_message_text("❌ Категория не найдена.")
+            return
+        
+        keyboard = self.knowledge_base.get_questions_keyboard(category_id)
+        if not keyboard:
+            await query.edit_message_text("❌ В этой категории пока нет вопросов.")
+            return
+        
+        category_text = f"📖 **{category['name']}**\n\nВыберите вопрос:"
+        await query.edit_message_text(category_text, reply_markup=keyboard, parse_mode='Markdown')
+    
+    async def show_answer(self, query, question_id):
+        """Показать ответ на вопрос"""
+        question, category = self.knowledge_base.get_question_by_id(question_id)
+        if not question:
+            await query.edit_message_text("❌ Вопрос не найден.")
+            return
+        
+        answer_text = self.knowledge_base.format_answer(question, category)
+        
+        # Создаем клавиатуру для навигации
+        keyboard = [
+            [
+                InlineKeyboardButton("🔙 Назад к вопросам", callback_data=f"category_{category['id']}"),
+                InlineKeyboardButton("📚 Все категории", callback_data="back_to_categories")
+            ],
+            [InlineKeyboardButton("🔙 Главное меню", callback_data="main_menu")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await query.edit_message_text(answer_text, reply_markup=reply_markup, parse_mode='Markdown')
+
+    async def search_knowledge(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Поиск в базе знаний"""
+        search_term = ' '.join(context.args)
+        if not search_term:
+            await update.message.reply_text("❌ Пожалуйста, укажите поисковый запрос.\nПример: /search дороги")
+            return
+        
+        results = self.knowledge_base.search_questions(search_term)
+        
+        if not results:
+            await update.message.reply_text(
+                f"🔍 По запросу '{search_term}' ничего не найдено.\n\n"
+                "Попробуйте другие ключевые слова или посмотрите /help"
+            )
+            return
+        
+        if len(results) == 1:
+            # Если найден один результат, показываем сразу
+            question, category = results[0]
+            answer_text = self.knowledge_base.format_answer(question, category)
+            await update.message.reply_text(answer_text, parse_mode='Markdown')
+        else:
+            # Если несколько результатов, показываем список
+            response = f"🔍 **Найдено результатов по запросу '{search_term}':**\n\n"
+            
+            keyboard = []
+            for i, (question, category) in enumerate(results[:10]):  # Ограничиваем 10 результатами
+                short_question = question['question']
+                if len(short_question) > 50:
+                    short_question = short_question[:50] + "..."
+                
+                response += f"{i+1}. {short_question}\n"
+                keyboard.append([
+                    InlineKeyboardButton(
+                        f"{i+1}. {short_question}",
+                        callback_data=f"question_{question['id']}"
+                    )
+                ])
+            
+            keyboard.append([
+                InlineKeyboardButton("📚 Все категории", callback_data="back_to_categories"),
+                InlineKeyboardButton("🔙 Главное меню", callback_data="main_menu")
+            ])
+            
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await update.message.reply_text(response, reply_markup=reply_markup, parse_mode='Markdown')
 
     async def show_my_appeals(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Показать обращения пользователя"""
@@ -346,7 +541,7 @@ class CitizenBot:
             }, limit=5)
             
             if not appeals:
-                await update.message.reply_text("У вас пока нет обращений.")
+                await update.message.reply_text("📭 У вас пока нет обращений.")
                 return
             
             response = "📋 Ваши последние обращения:\n\n"
@@ -365,30 +560,39 @@ class CitizenBot:
             
         except Exception as e:
             logger.error(f"Ошибка получения обращений: {e}")
-            await update.message.reply_text("Ошибка при получении ваших обращений.")
+            await update.message.reply_text("❌ Ошибка при получении ваших обращений.")
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработка текстовых сообщений"""
         text = update.message.text
         
-        if text == 'Подать обращение':
+        if text == '📝 Подать обращение':
             await self.start_appeal_process(update, context)
-        elif text == 'Мои обращения':
+        elif text == '📋 Мои обращения':
             await self.show_my_appeals(update, context)
+        elif text == '📚 База знаний':
+            await self.knowledge_base_command(update, context)
+        elif text == 'ℹ️ Помощь':
+            await self.help_command(update, context)  # Теперь вызывает обновленную команду помощи
         else:
-            # Если не в процессе ввода адреса, предлагаем начать обращение
-            keyboard = [['Подать обращение', 'Мои обращения']]
+            # Если не в процессе ввода адреса, предлагаем начать обращение или использовать базу знаний
+            keyboard = [
+                ['📝 Подать обращение', '📋 Мои обращения'],
+                ['📚 База знаний', 'ℹ️ Помощь']
+            ]
             reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
             await update.message.reply_text(
-                "Для подачи обращения нажмите 'Подать обращение'",
+                "Для подачи обращения нажмите '📝 Подать обращение'\n"
+                "Для поиска информации используйте '📚 База знаний'\n"
+                "Для справки нажмите 'ℹ️ Помощь'",
                 reply_markup=reply_markup
             )
 
     def setup_handlers(self):
-        """Настройка обработчиков с ConversationHandler для адреса"""
+        """Настройка обработчиков с ConversationHandler для адреса и callback для базы знаний"""
         # ConversationHandler для процесса ввода адреса
         address_conv_handler = ConversationHandler(
-            entry_points=[MessageHandler(filters.Regex('^Подать обращение$'), self.start_appeal_process)],
+            entry_points=[MessageHandler(filters.Regex('^(📝 Подать обращение|Подать обращение)$'), self.start_appeal_process)],
             states={
                 AddressStates.WAITING_FOR_SETTLEMENT: [
                     MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_settlement)
@@ -408,29 +612,17 @@ class CitizenBot:
 
         self.application.add_handler(CommandHandler("start", self.start_command))
         self.application.add_handler(CommandHandler("help", self.help_command))
+        self.application.add_handler(CommandHandler("knowledge", self.knowledge_base_command))
+        self.application.add_handler(CommandHandler("search", self.search_knowledge))
         self.application.add_handler(address_conv_handler)
         self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
-
-    async def cancel_address(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Отмена процесса ввода адреса с информативным сообщением"""
-        context.user_data.clear()
         
-        cancel_message = """
-    ❌ Ввод адреса отменен.
+        # Обработчик callback'ов для базы знаний
+        self.application.add_handler(CallbackQueryHandler(
+            self.handle_knowledge_callback, 
+            pattern="^(main_menu|back_to_categories|category_.*|question_.*)$"
+        ))
 
-    Вы можете начать заново, нажав «Подать обращение».
-
-    Если у вас возникли проблемы с определением населенного пункта, убедитесь что:
-    • Вы вводите официальное название
-    • Населенный пункт находится в Тамбовской области
-    • Используете правильные сокращения (с., д., г., пгт.)
-    """
-        keyboard = [['Подать обращение', 'Мои обращения']]
-        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-        
-        await update.message.reply_text(cancel_message, reply_markup=reply_markup)
-        return ConversationHandler.END
-    
     def run(self):
         """Запуск бота с созданием нового event loop"""
         try:

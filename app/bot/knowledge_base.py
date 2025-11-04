@@ -6,7 +6,7 @@ from telegram.ext import ContextTypes
 logger = logging.getLogger(__name__)
 
 class KnowledgeBase:
-    def __init__(self, knowledge_file='knowledge_base.json'):
+    def __init__(self, knowledge_file='bot/knowledgeBase.json'):
         self.knowledge_file = knowledge_file
         self.data = self.load_knowledge_base()
     
