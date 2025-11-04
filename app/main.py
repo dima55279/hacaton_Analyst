@@ -42,7 +42,7 @@ class AppealsProcessingSystem:
                 'text': appeal_text,
                 'type': appeal_type,
                 'platform': platform,
-                'status': 'new',
+                'status': 'новое',  # ИЗМЕНЕНО: было 'new'
                 'created_at': datetime.now()
             }
             
@@ -53,21 +53,23 @@ class AppealsProcessingSystem:
                     'street': address_info.get('street'),
                     'house': address_info.get('house'),
                     'full_address': address_info.get('full_address'),
-                    'district': address_info.get('district')  # Теперь district будет автоматически определяться если не указан
+                    'district': address_info.get('district')
                 })
             
-            # Сохранение в базу (теперь с автоматическим определением района)
+            # Сохранение в базу
             appeal_id = self.database.store_appeal(appeal_data)
             
             # Генерация ответа для типовых обращений с передачей адресной информации
             if appeal_type in self.analyzer.get_common_types():
                 response = self.analyzer.generate_response(appeal_id, appeal_text, appeal_type, address_info)
-                self.database.update_appeal(appeal_id, {'response': response, 'status': 'answered'})
+                # ИЗМЕНЕНО: статус 'отвечено' вместо 'answered'
+                self.database.update_appeal(appeal_id, {'response': response, 'status': 'отвечено'})
                 return response
             else:
                 # Для нетиповых обращений также генерируем ответ с контактами муниципалитета
                 response = self.analyzer.generate_response(appeal_id, appeal_text, appeal_type, address_info)
-                self.database.update_appeal(appeal_id, {'response': response, 'status': 'requires_manual_review'})
+                # ИЗМЕНЕНО: статус 'требует проверки' вместо 'requires_manual_review'
+                self.database.update_appeal(appeal_id, {'response': response, 'status': 'требует проверки'})
                 return response
                 
         except Exception as e:

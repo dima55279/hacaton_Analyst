@@ -141,7 +141,7 @@ class DatabaseManager:
                 appeal_data['text'],
                 appeal_data.get('type'),
                 appeal_data.get('platform'),
-                'новое',  # Все новые обращения получают статус "новое"
+                'новое',  # УЖЕ ИСПОЛЬЗУЕТСЯ РУССКИЙ СТАТУС
                 appeal_data.get('created_at')
             ]
             
@@ -175,16 +175,11 @@ class DatabaseManager:
         try:
             cursor = conn.cursor()
             
-            # Расширенный mapping для миграции
             status_mapping = {
                 'new': 'новое',
-                'answered': 'отвечено', 
-                'in_progress': 'в работе',
+                'answered': 'отвечено',
                 'requires_manual_review': 'требует проверки',
-                'requires_review': 'требует проверки',
-                'manual_review': 'требует проверки',
-                'closed': 'закрыто',
-                'completed': 'закрыто'
+                'in_progress': 'в работе'
             }
             
             for eng_status, ru_status in status_mapping.items():
